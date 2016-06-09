@@ -1,0 +1,8 @@
+/npm-debug.log
+.idea/
+node_modules/
+.DS_Store
+/temp/
+/test/
+/src/
+.gitignore
