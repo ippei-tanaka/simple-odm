@@ -1,13 +1,15 @@
 {
   "name": "simple-odm",
   "version": "0.0.1",
-  "description": "a simple object data manager",
+  "description": "a simple object document mapper",
   "main": "lib/index.js",
   "scripts": {
     "build": "npm run build:clean && npm run build:babel",
     "build:clean": "./node_modules/.bin/rimraf lib",
     "build:babel": " ./node_modules/.bin/babel src --out-dir lib",
-    "test": "./node_modules/.bin/mocha $(find test -name '*.test.js') --compilers js:babel-register"
+    "test": "./node_modules/.bin/mocha $(find test -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
+    "test:unit": "./node_modules/.bin/mocha $(find test/unit -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
+    "test:integration": "./node_modules/.bin/mocha $(find test/integration -name '*.test.js') --compilers js:babel-register --require babel-polyfill"
   },
   "author": {
     "name": "Ippei Tanaka",
@@ -21,11 +23,15 @@
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",
+    "babel-plugin-transform-builtin-extend": "^1.1.0",
+    "babel-polyfill": "^6.9.1",
     "babel-preset-es2015": "^6.9.0",
     "babel-register": "^6.9.0",
     "chai": "^3.5.0",
+    "co": "^4.6.0",
     "mocha": "^2.5.3",
-    "rimraf": "^2.5.2"
+    "rimraf": "^2.5.2",
+    "uuid-validate": "0.0.2"
   },
   "dependencies": {
     "mongodb": "^2.1.18"
