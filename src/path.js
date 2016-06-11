@@ -15,6 +15,8 @@ const typeErrorDefaultMessage = function (value) {
 
 const defaultSanitizer = (value) => value;
 
+const DETAULT_TYPE = Types.String;
+
 export default class Path {
 
     /**
@@ -22,9 +24,6 @@ export default class Path {
      * @param [options = {}] {Object}
      */
     constructor(name, options = {}) {
-
-        this._name = name;
-        this._options = options;
 
         if (typeof name !== "string") {
             throw new SimpleOdmError('A path name has to be string.');
@@ -44,10 +43,76 @@ export default class Path {
             throw new SimpleOdmError('A type attribute has to be a type.');
         }
 
-        if (options.hasOwnProperty('default_value')
-            && !isValidValueAs(options.default_value, this.type)) {
-            throw new SimpleOdmError(`The default value is not valid as the "${this.type}" type.`);
+        if (options.hasOwnProperty('default_value')) {
+            const type = options.type || DETAULT_TYPE;
+            if (!isValidValueAs(options.default_value, type)) {
+                throw new SimpleOdmError(`The default value is not valid as the "${type}" type.`);
+            }
         }
+
+        if (options.hasOwnProperty('unique')
+            && typeof options.unique !== "boolean"
+            && typeof options.unique !== "function") {
+            throw new SimpleOdmError('The unique attribute has to be either boolean or a function.');
+        }
+
+        if (options.hasOwnProperty('required')
+            && typeof options.required !== "boolean"
+            && typeof options.required !== "function"
+            && typeof options.required !== "object"
+            && !Array.isArray(options.required)) {
+            throw new SimpleOdmError('The require attribute has to be either boolean, an array, a function or an object.');
+        }
+
+        if (options.hasOwnProperty('sanitize')
+            && typeof options.sanitize !== "function") {
+            throw new SimpleOdmError('The sanitize attribute has to be a function.');
+        }
+
+        if (options.hasOwnProperty('validate')
+            && !(options.validate instanceof (function*(){}).constructor)) {
+            throw new SimpleOdmError('The validate attribute has to be a generator function.');
+        }
+
+        this._name = name;
+        this._display_name = options.display_name;
+        this._type = options.type || DETAULT_TYPE;
+        this._default_value = options.default_value;
+
+        this._unique = !!options.unique;
+        this._unique_err_msg = (typeof options.unique === "function")
+            ? options.unique.bind(this)
+            : uniqueErrorDefaultMessage.bind(this);
+
+        const required = options.required;
+
+        if (typeof required === "boolean" || !options.hasOwnProperty('required')) {
+            this._required_created = !!required;
+            this._required_updated = !!required;
+            this._required_created_err_msg = requiredErrorDefaultMessage.bind(this);
+            this._required_updated_err_msg = requiredErrorDefaultMessage.bind(this);
+        } else if (typeof required === "function") {
+            this._required_created = true;
+            this._required_updated = true;
+            this._required_created_err_msg = required.bind(this);
+            this._required_updated_err_msg = required.bind(this);
+        } else if (Array.isArray(required)) {
+            this._required_created = required.indexOf('created') !== -1;
+            this._required_updated = required.indexOf('updated') !== -1;
+            this._required_created_err_msg = requiredErrorDefaultMessage.bind(this);
+            this._required_updated_err_msg = requiredErrorDefaultMessage.bind(this);
+        } else if (typeof required === "object") {
+            const created = required.created;
+            const updated = required.updated;
+            this._required_created = !!created;
+            this._required_updated = !!updated;
+            this._required_created_err_msg = (typeof created === "function") ? created.bind(this) : requiredErrorDefaultMessage.bind(this);
+            this._required_updated_err_msg = (typeof updated === "function") ? updated.bind(this) : requiredErrorDefaultMessage.bind(this);
+        }
+
+        this._sanitizer = options.sanitize ? options.sanitize.bind(this) : defaultSanitizer;
+
+        this._validator = options.validate ? options.validate.bind(this) : function* (value) {};
     }
 
     /**
@@ -61,81 +126,83 @@ export default class Path {
      * @returns {string}
      */
     get displayName() {
-        return this._options.display_name || this.name;
+        return this._display_name || this.name;
     }
 
     /**
      * @returns {Symbol}
      */
     get type() {
-        return this._options.type || Types.String;
+        return this._type;
     }
 
     /**
      * @returns {*}
      */
     get defaultValue() {
-        return this._options.default_value;
+        return this._default_value;
     }
 
     /**
      * @returns {boolean}
      */
     get isUnique() {
-        return !!this._options.unique;
+        return this._unique;
     }
 
     /**
      * @returns {boolean}
      */
     get isRequiredWhenCreated() {
-        const required = this._options.required;
-        return required === true || (Array.isArray(required) && required.indexOf('created') !== -1);
+        return this._required_created;
     }
 
     /**
      * @returns {boolean}
      */
     get isRequiredWhenUpdated() {
-        const required = this._options.required;
-        return required === true || (Array.isArray(required) && required.indexOf('updated') !== -1);
+        return this._required_updated;
     }
 
-    get requiredErrorMessageBuilder() {
-        if (typeof this._options.required === 'function') {
-            return this._options.required.bind(this);
-        } else {
-            return requiredErrorDefaultMessage.bind(this);
-        }
+    /**
+     * @returns {function(this:Path)}
+     */
+    get requiredWhenCreatedErrorMessageBuilder() {
+        return this._required_created_err_msg;
     }
 
+    /**
+     * @returns {function(this:Path)}
+     */
+    get requiredWhenUpdatedErrorMessageBuilder() {
+        return this._required_updated_err_msg;
+    }
+
+    /**
+     * @returns {function(this:Path)}
+     */
     get uniqueErrorMessageBuilder() {
-        if (typeof this._options.unique === 'function') {
-            return this._options.unique.bind(this);
-        } else {
-            return uniqueErrorDefaultMessage.bind(this);
-        }
+        return this._unique_err_msg;
     }
 
+    /**
+     * @returns {function(this:Path)}
+     */
     get typeErrorMessageBuilder() {
         return typeErrorDefaultMessage.bind(this);
     }
 
     /**
-     * @returns {function}
+     * @returns {function(this:Path)}
      */
     get sanitizer() {
-        return typeof this._options.sanitize === 'function'
-            ? this._options.sanitize.bind(this)
-            : defaultSanitizer;
+        return this._sanitizer;
     }
 
     /**
      * @returns {GeneratorFunction}
      */
     get validator() {
-        return typeof this._options.validate === 'function'
-            ? this._options.validate.bind(this)
-            : function* (value) {};
+        return this._validator;
     }
 }
