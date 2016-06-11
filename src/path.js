@@ -15,6 +15,8 @@ const typeErrorDefaultMessage = function (value) {
 
 const defaultSanitizer = (value) => value;
 
+const defaultValidator = function*() {};
+
 const DETAULT_TYPE = Types.String;
 
 export default class Path {
@@ -70,7 +72,7 @@ export default class Path {
         }
 
         if (options.hasOwnProperty('validate')
-            && !(options.validate instanceof (function*(){}).constructor)) {
+            && !(options.validate instanceof (defaultValidator).constructor)) {
             throw new SimpleOdmError('The validate attribute has to be a generator function.');
         }
 
@@ -112,7 +114,7 @@ export default class Path {
 
         this._sanitizer = options.sanitize ? options.sanitize.bind(this) : defaultSanitizer;
 
-        this._validator = options.validate ? options.validate.bind(this) : function* (value) {};
+        this._validator = options.validate ? options.validate.bind(this) : defaultValidator;
     }
 
     /**
