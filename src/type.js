@@ -1,8 +1,8 @@
 import { ObjectID } from 'mongodb';
 import UUID_Validate from "uuid-validate";
+import { SimpleOdmError } from './errors';
 
-class Type
-{
+class Type {
     constructor(name) {
         Object.defineProperty(this, "_name", {value: name});
     }
@@ -50,8 +50,46 @@ export const isValidValueAs = (value, type) => {
     }
 };
 
-export const isTypeObject = (value) => {
+export const convertTo = (value, type) => {
+
+    if (Array.isArray(type)) {
+        if (!Array.isArray(value))
+            throw new SimpleOdmError(`"${value}" couldn't be converted to an array.`);
+        return value.map((i) => convertTo(i, type[0]));
+    }
+
+    switch (type) {
+        case Types.String:
+            return String(value);
+        case Types.Integer:
+            const num = Number.parseInt(value);
+            if (Number.isNaN(num))
+                throw new SimpleOdmError(`"${value}" couldn't be converted to ${type}.`);
+            return num;
+        case Types.Date:
+            const date = new Date(value);
+            if (Number.isNaN(date.valueOf()))
+                throw new SimpleOdmError(`"${value}" couldn't be converted to ${type}.`);
+            return date;
+        case Types.Boolean:
+            return !!value;
+        case Types.MongoObjectID:
+            return ObjectID(value);
+        case Types.UUID:
+            if (!UUID_Validate(value))
+                throw new SimpleOdmError(`"${value}" couldn't be converted to ${type}.`);
+            return value;
+        default:
+            return value;
+    }
+};
+
+export const isValidType = (value) => {
     let isType = false;
+
+    if (Array.isArray(value)) {
+        isType = value.map((i) => isValidType(i)).filter((i) => i === false).length === 0;
+    }
 
     for (let key of Object.keys(Types)) {
         if (value === Types[key]) {

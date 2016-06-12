@@ -54,6 +54,7 @@ describe('path', function () {
             expect(path.type).to.equal(Types.String);
             expect(path.defaultValue).to.equal(undefined);
             expect(path.isUnique).to.equal(false);
+            expect(path.isProjected).to.equal(true);
             expect(path.isRequiredWhenCreated).to.equal(false);
             expect(path.isRequiredWhenUpdated).to.equal(false);
             expect(path.requiredWhenCreatedErrorMessageBuilder).to.be.a('function');
@@ -226,6 +227,39 @@ describe('path', function () {
             }
 
             expect(error).to.be.an('undefined');
+
+            done();
+        }).catch((e) => {
+            done(e);
+        });
+    });
+
+    it('should check the projected attribute.', (done) => {
+        co(function* () {
+            let error;
+
+            try {
+                new Path("slug", {
+                    projected: false
+                });
+            } catch (e) {
+                error = e || null;
+            }
+
+            expect(error).to.be.an('undefined');
+
+            error = null;
+
+            try {
+                new Path("slug", {
+                    projected: {}
+                });
+            } catch (e) {
+                error = e || null;
+            }
+
+            expect(error).to.be.an.instanceof(SimpleOdmError);
+            expect(error.message).to.equal('The projected attribute has to be boolean.');
 
             done();
         }).catch((e) => {
