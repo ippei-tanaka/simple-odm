@@ -1,5 +1,5 @@
 import { SimpleOdmError } from './errors';
-import { Types, isTypeObject, isValidValueAs } from './type';
+import { Types, isValidType, isValidValueAs } from './type';
 
 const requiredErrorDefaultMessage = function () {
     return `The ${this.displayName} is required.`;
@@ -41,7 +41,7 @@ export default class Path {
         }
 
         if (options.hasOwnProperty('type')
-            && !isTypeObject(options.type)) {
+            && !isValidType(options.type)) {
             throw new SimpleOdmError('A type attribute has to be a type.');
         }
 
@@ -56,6 +56,11 @@ export default class Path {
             && typeof options.unique !== "boolean"
             && typeof options.unique !== "function") {
             throw new SimpleOdmError('The unique attribute has to be either boolean or a function.');
+        }
+
+        if (options.hasOwnProperty('projected')
+            && typeof options.projected !== "boolean") {
+            throw new SimpleOdmError('The projected attribute has to be boolean.');
         }
 
         if (options.hasOwnProperty('required')
@@ -86,6 +91,8 @@ export default class Path {
             ? options.unique.bind(this)
             : uniqueErrorDefaultMessage.bind(this);
 
+        this._projected = options.projected === false ? false : true;
+
         const required = options.required;
 
         if (typeof required === "boolean" || !options.hasOwnProperty('required')) {
@@ -115,6 +122,8 @@ export default class Path {
         this._sanitizer = options.sanitize ? options.sanitize.bind(this) : defaultSanitizer;
 
         this._validator = options.validate ? options.validate.bind(this) : defaultValidator;
+
+        Object.freeze(this);
     }
 
     /**
@@ -150,6 +159,13 @@ export default class Path {
      */
     get isUnique() {
         return this._unique;
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    get isProjected() {
+        return this._projected;
     }
 
     /**
