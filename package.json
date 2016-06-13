@@ -31,7 +31,8 @@
     "co": "^4.6.0",
     "mocha": "^2.5.3",
     "rimraf": "^2.5.2",
-    "uuid-validate": "0.0.2"
+    "uuid-validate": "0.0.2",
+    "validator": "^5.4.0"
   },
   "dependencies": {
     "babel-plugin-transform-runtime": "^6.9.0",
