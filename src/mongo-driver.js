@@ -2,38 +2,12 @@ import { MongoClient } from 'mongodb';
 import co from 'co';
 
 let db = null;
+const SETUP_CHECK_INTERVAL = 100;
 
 const setting = {
     port: 27017,
     host: "localhost",
     database: ""
-};
-
-const connect = ({port, host, database} = {}) => {
-    if (!setting.database && !database)
-        throw new Error("The driver needs a database name to use.");
-
-    return co(function* () {
-        if (!db) {
-            const url = buildUrl({
-                port: port || setting.port,
-                host: host || setting.host,
-                database: database || setting.database
-            });
-            db = yield MongoClient.connect(url);
-            db.on("close", onDisconnected);
-        }
-        return db;
-    }).catch((error) => {
-        console.error(error.stack);
-        return null;
-    });
-};
-
-const setUp = ({port, host, database} = {}) => {
-    setting.port = port || setting.port;
-    setting.host = host || setting.host;
-    setting.database = database || setting.database;
 };
 
 const buildUrl = (obj) => `mongodb://${obj.host}:${obj.port}/${obj.database}`;
@@ -42,4 +16,55 @@ const onDisconnected = () => {
     db = null;
 };
 
-export default {connect, setUp};
+const wait = (msec) => new Promise((resolve) => {
+    setTimeout(resolve, msec);
+});
+
+const connect = ({waitForSetup = 3000} = {}) => {
+
+    let attempt = 0;
+    const attemptLimit = Math.floor(waitForSetup / SETUP_CHECK_INTERVAL);
+
+    return co(function* () {
+
+        while (!setting.database && attempt < attemptLimit) {
+            attempt += 1;
+            yield wait(SETUP_CHECK_INTERVAL);
+        }
+
+        if (!setting.database) {
+            throw new Error("The driver needs a database name to use.");
+        }
+
+        if (!db) {
+            const url = buildUrl(setting);
+            db = yield MongoClient.connect(url);
+            db.on("close", onDisconnected);
+        }
+
+        return db;
+
+    });
+};
+
+const disconnect = () => co(function* () {
+    if (db) {
+        yield db.close();
+    }
+});
+
+const setUp = (args) => {
+    if (args.hasOwnProperty('port')) {
+        setting.port = args.port;
+    }
+
+    if (args.hasOwnProperty('host')) {
+        setting.host = args.host;
+    }
+
+    if (args.hasOwnProperty('database')) {
+        setting.database = args.database;
+    }
+};
+
+export default {connect, disconnect, setUp};
