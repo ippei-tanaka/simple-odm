@@ -24,6 +24,14 @@ export default class Path {
     /**
      * @param name {string}
      * @param [options = {}] {Object}
+     * @param options.display_name {string}
+     * @param options.type {Type|Array|object}
+     * @param options.default_value {*}
+     * @param options.unique {boolean|function}
+     * @param options.projected {boolean}
+     * @param options.required {boolean|function|object|Array}
+     * @param options.sanitize {function}
+     * @param options.validate {GeneratorFunction}
      */
     constructor(name, options = {}) {
 
@@ -31,7 +39,9 @@ export default class Path {
             throw new SimpleOdmError('A path name has to be string.');
         }
 
-        if (typeof options !== "object") {
+        if (typeof options !== "object"
+            || options === null
+            || Array.isArray(options)) {
             throw new SimpleOdmError('An options argument has to be an object.');
         }
 
@@ -123,6 +133,7 @@ export default class Path {
 
         this._validator = options.validate ? options.validate.bind(this) : defaultValidator;
 
+        Object.freeze(this._type);
         Object.freeze(this);
     }
 

@@ -4,6 +4,17 @@ import Path from './path';
 
 const checkIfEmpty = (value) => value === "" || value === undefined;
 
+const normalize = (value, type) => {
+    try {
+        if (value === undefined || value === null) {
+            return value;
+        }
+        return convertTo(value, type);
+    } catch (error) {
+        return undefined;
+    }
+};
+
 class PathModel {
 
     /**
@@ -19,57 +30,68 @@ class PathModel {
 
         this._rowValue = value;
 
+        const _normalizedValue = normalize(value, path.type);
+        this._normalizedValue = _normalizedValue !== undefined
+            ? _normalizedValue
+            : path.defaultValue;
+
+        this._projectedValue = path.isProjected ? this._normalizedValue : undefined;
+
+        Object.freeze(this._rowValue);
+        Object.freeze(this._normalizedValue);
+        Object.freeze(this._projectedValue);
         Object.freeze(this);
     }
 
-    get normalizedValue() {
-        try {
-            if (this._rowValue === undefined
-                || this._rowValue === null) {
-                return this._rowValue;
-            }
-            return convertTo(this._rowValue, this._path.type);
-        } catch (error) {
-            return undefined;
-        }
+    /**
+     * @returns {Path}
+     */
+    get path () {
+        return this._path;
     }
 
-    examine({updated}) {
+    get rowValue() {
+        return this._rowValue;
+    }
+
+    get normalizedValue() {
+        return this._normalizedValue;
+    }
+
+    get projectedValue () {
+        return this._projectedValue;
+    }
+
+    *examine({updated = false} = {}) {
 
         const rowValue = this._rowValue;
         const isEmpty = checkIfEmpty(rowValue);
         const path = this._path;
 
         if (isEmpty && !updated && path.isRequiredWhenCreated) {
-            throw [path.requiredWhenCreatedErrorMessageBuilder()];
+            return yield path.requiredWhenCreatedErrorMessageBuilder();
         }
 
         if (isEmpty && updated && path.isRequiredWhenUpdated) {
-            throw [path.requiredWhenUpdatedErrorMessageBuilder()];
+            return yield path.requiredWhenUpdatedErrorMessageBuilder();
         }
 
         if (isEmpty) {
-            return true;
+            return;
         }
 
         try {
             convertTo(rowValue, path.type);
         } catch (error) {
-            throw [path.typeErrorMessageBuilder(rowValue)];
+            return yield path.typeErrorMessageBuilder(rowValue);
         }
 
-        const messages = [];
         const iterator = path.validator(path.sanitizer(rowValue));
 
         for (let message of iterator) {
-            messages.push(message);
+            yield message;
         }
 
-        if (messages.length > 0) {
-            throw messages;
-        }
-
-        return true;
     }
 
 }
