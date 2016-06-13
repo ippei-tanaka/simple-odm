@@ -25,7 +25,7 @@ describe('SchemaData', function () {
                 }
             });
 
-            const User = SchemaModel.createModel(schema);
+            const User = SchemaModel.createModel({schema});
 
             const user = new User({
                 email: "test"
