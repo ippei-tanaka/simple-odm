@@ -15,4 +15,4 @@ export default
     emit: emitter.emit.bind(emitter)
 }
 
-export const MONGO_CONNECT = 'MongoConnect';
+//export const MONGO_CONNECT = 'MongoConnect';

@@ -2,27 +2,22 @@ import co from 'co';
 import driver from './mongo-driver';
 
 const createUniqueIndex = (collectionName, pathName) => co(function* () {
+    return createIndex(collectionName, pathName, {unique: true});
+});
+
+const createIndex = (collectionName, pathName, options) => co(function* () {
     const db = yield driver.connect();
-    yield db.collection(collectionName).createIndex({[pathName]: 1}, {unique: true});
+    return yield db.collection(collectionName).createIndex({[pathName]: 1}, options);
+});
+
+const getIndexInfo = (collectionName, pathName) => co(function* () {
+    const db = yield driver.connect();
+    return yield db.collection(collectionName).indexInformation(pathName);
 });
 
 const dropIndex = (collectionName, pathName) => co(function* () {
     const db = yield driver.connect();
-    yield db.collection(collectionName).dropIndex(pathName);
-});
-
-const removeAllDocuments = () => co(function* () {
-    const db = yield driver.connect();
-    const collections = yield db.listCollections().toArray();
-
-    for (let c of collections) {
-        const collection = db.collection(c.name);
-        try {
-            yield collection.deleteMany({});
-        } catch (e) {
-            throw e;
-        }
-    }
+    return yield db.collection(collectionName).dropIndex(pathName);
 });
 
 const dropDatabase = () => co(function* () {
@@ -30,4 +25,10 @@ const dropDatabase = () => co(function* () {
     yield db.dropDatabase();
 });
 
-export default { createUniqueIndex, dropIndex, removeAllDocuments, dropDatabase };
+export default {
+    createUniqueIndex,
+    createIndex,
+    dropIndex,
+    getIndexInfo,
+    dropDatabase
+};

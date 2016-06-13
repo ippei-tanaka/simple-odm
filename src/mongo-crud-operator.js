@@ -6,74 +6,77 @@ const getCollection = (collectionName) => co(function* () {
     return db.collection(collectionName);
 });
 
-const findMany = (collectionName, {
+const findMany = (
+    collectionName,
     query = {},
     sort = {},
     limit = 0,
     skip = 0,
     projection = {}
-    } = {})
-    =>
-    co(function* () {
-        const collection = yield getCollection(collectionName);
-        return yield collection
-            .find(query, projection)
-            .sort(sort)
-            .skip(skip)
-            .limit(limit).toArray();
-    });
+) => co(function* () {
+    const collection = yield getCollection(collectionName);
+    return yield collection
+        .find(query, projection)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit).toArray();
+});
 
-const findOne = (collectionName, {
-    query = {},
+const findOne = (
+    collectionName,
+    query,
     projection = {}
-    } = {})
-    =>
-    co(function* () {
-        const collection = yield getCollection(collectionName);
-        return yield collection.findOne(query, projection);
-    });
+) => co(function* () {
+    const collection = yield getCollection(collectionName);
+    return yield collection.findOne(query, projection);
+});
 
-const insertOne = (collectionName, {values})
-    =>
-    co(function* () {
-        const collection = yield getCollection(collectionName);
-        return yield collection.insertOne(values);
-    });
+const insertOne = (
+    collectionName,
+    values
+) => co(function* () {
+    const collection = yield getCollection(collectionName);
+    return yield collection.insertOne(values);
+});
 
-const updateOne = (collectionName, {query, values})
-    =>
-    co(function* () {
-        const collection = yield getCollection(collectionName);
-        return yield collection.updateOne(
-            query,
-            {$set: values}
-        );
-    });
+const updateOne = (
+    collectionName,
+    query,
+    values
+) => co(function* () {
+    const collection = yield getCollection(collectionName);
+    return yield collection.updateOne(
+        query,
+        {$set: values}
+    );
+});
 
-const deleteOne = (collectionName, {query})
-    =>
-    co(function* () {
-        const collection = yield getCollection(collectionName);
-        return yield collection.deleteOne(query);
-    });
+const deleteOne = (
+    collectionName,
+    query
+) => co(function* () {
+    const collection = yield getCollection(collectionName);
+    return yield collection.deleteOne(query);
+});
 
-const aggregate = (collectionName, {query})
-    =>
-    co(function* () {
-        const collection = yield getCollection(collectionName);
-        return yield new Promise((resolve, reject) => {
-            collection.aggregate(query, function (err, result) {
-                if (err) return reject(err);
-                resolve(result);
-            });
+const aggregate = (
+    collectionName,
+    query
+) => co(function* () {
+    const collection = yield getCollection(collectionName);
+    return yield new Promise((
+        resolve,
+        reject
+    ) => {
+        collection.aggregate(query, function (
+            err,
+            result
+        ) {
+            if (err) return reject(err);
+            resolve(result);
         });
     });
-
-const operator = {
-    findMany, findOne,
-    insertOne, updateOne, deleteOne,
-    aggregate
-};
+});
 
 export const bindOperator = (collectionName) => {
     const obj = {};
@@ -83,6 +86,12 @@ export const bindOperator = (collectionName) => {
     }
 
     return obj;
+};
+
+const operator = {
+    findMany, findOne,
+    insertOne, updateOne, deleteOne,
+    aggregate
 };
 
 export default operator;
