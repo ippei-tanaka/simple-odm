@@ -1,4 +1,4 @@
-import { TYPES, convertTo, isValidType } from './type';
+import { convertTo } from './type';
 import { SimpleOdmError } from './errors';
 import Path from './path';
 
@@ -28,7 +28,7 @@ class PathModel {
 
         this._path = path;
 
-        this._rowValue = value;
+        this._rawValue = value;
 
         const _normalizedValue = normalize(value, path.type);
         this._normalizedValue = _normalizedValue !== undefined
@@ -37,7 +37,7 @@ class PathModel {
 
         this._projectedValue = path.isProjected ? this._normalizedValue : undefined;
 
-        Object.freeze(this._rowValue);
+        Object.freeze(this._rawValue);
         Object.freeze(this._normalizedValue);
         Object.freeze(this._projectedValue);
         Object.freeze(this);
@@ -50,8 +50,8 @@ class PathModel {
         return this._path;
     }
 
-    get rowValue() {
-        return this._rowValue;
+    get rawValue() {
+        return this._rawValue;
     }
 
     get normalizedValue() {
@@ -62,10 +62,10 @@ class PathModel {
         return this._projectedValue;
     }
 
-    *examine({updated = false} = {}) {
+    *inspectErrors({updated = false} = {}) {
 
-        const rowValue = this._rowValue;
-        const isEmpty = checkIfEmpty(rowValue);
+        const rawValue = this._rawValue;
+        const isEmpty = checkIfEmpty(rawValue);
         const path = this._path;
 
         if (isEmpty && !updated && path.isRequiredWhenCreated) {
@@ -81,12 +81,12 @@ class PathModel {
         }
 
         try {
-            convertTo(rowValue, path.type);
+            convertTo(rawValue, path.type);
         } catch (error) {
-            return yield path.typeErrorMessageBuilder(rowValue);
+            return yield path.typeErrorMessageBuilder(rawValue);
         }
 
-        const iterator = path.validator(path.sanitizer(rowValue));
+        const iterator = path.validator(path.sanitizer(rawValue));
 
         for (let message of iterator) {
             yield message;

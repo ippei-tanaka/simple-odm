@@ -1,5 +1,6 @@
 import co from 'co';
 import driver from './mongo-driver';
+import crudOperator from './crud-operator';
 
 const getCollection = (collectionName) => co(function* () {
     const db = yield driver.connect();
@@ -94,4 +95,4 @@ const operator = {
     aggregate
 };
 
-export default operator;
+export default Object.freeze(Object.assign({}, crudOperator, operator));

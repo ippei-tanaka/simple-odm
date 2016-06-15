@@ -4,7 +4,7 @@ import Path from '../../src/path';
 import { Types } from '../../src/type';
 import { SimpleOdmError } from '../../src/errors';
 
-describe('Path', function () {
+describe('path', function () {
 
     it('should not create a Path instance if a name is not string.', (done) => {
         co(function* () {

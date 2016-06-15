@@ -4,7 +4,7 @@ import Schema from '../../src/schema';
 import { Types } from '../../src/type';
 import { SimpleOdmError } from '../../src/errors';
 
-describe('Schema', function () {
+describe('schema', function () {
     it('should throw an error if some arguments are invalid.', (done) => {
         co(function* () {
             let error;

@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { Types, isValidValueAs, isValidType, convertTo } from '../../src/type';
 import { ObjectID } from 'mongodb';
 
-describe('Type', function () {
+describe('type', function () {
 
     describe('.isValidType(value)', () => {
         it('should check if value is a type object.', (done) => {
