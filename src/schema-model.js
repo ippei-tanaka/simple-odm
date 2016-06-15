@@ -3,28 +3,24 @@ import PathModel from './path-model';
 import { SimpleOdmError } from './errors';
 import Schema from './schema';
 
-export default class SchemaModel {
+export class SchemaModel {
 
     /**
      * @param schema {Schema}
-     * @param onCreate {function}
-     * @param onUpdate {function}
      * @return
      */
-    static createModel({schema, onCreate, onUpdate}) {
-        return this.bind(null, schema, onCreate, onUpdate);
+    static createModel({schema}) {
+        return this.bind(null, schema);
     }
 
     /**
      * @param schema {Schema}
-     * @param onCreate {function}
-     * @param onUpdate {function}
      * @param values {object}
      */
-    constructor(schema,
-                onCreate = () => {},
-                onUpdate = () => {},
-                values = {}) {
+    constructor(
+        schema,
+        values = {}
+    ) {
 
         if (!(schema instanceof Schema)) {
             throw new SimpleOdmError('A schema argument has to be a Schema object.');
@@ -38,22 +34,21 @@ export default class SchemaModel {
 
         this._schema = schema;
 
-        this._pathDataMap = {};
+
+        this._pathModelMap = {};
         for (let path of schema) {
-            this._pathDataMap[path.name] = new PathModel(path, values[path.name]);
+            this._pathModelMap[path.name] = new PathModel(path, values[path.name]);
         }
 
-        this._onCreate = onCreate;
+        this._errorMessageMap = {};
 
-        this._onUpdate = onUpdate;
-
-        Object.freeze(this._pathDataMap);
+        Object.freeze(this._pathModelMap);
         Object.freeze(this);
     }
 
     *[Symbol.iterator] () {
-        for (let pathName of Object.keys(this._pathDataMap)) {
-            yield this._pathDataMap[pathName];
+        for (let pathName of Object.keys(this._pathModelMap)) {
+            yield this._pathModelMap[pathName];
         }
     }
 
@@ -68,44 +63,80 @@ export default class SchemaModel {
         const _values = {};
 
         for (let pathData of this) {
-            const value = pathData.projectedValue;
-
-            if (value) {
-                _values[pathData.name] = value;
-            }
+            _values[pathData.name] = pathData.projectedValue;
         }
 
         return _values;
     }
 
-    get onCreate () {
-        return this._onCreate;
-    }
-
-    get onUpdate () {
-        return this._onUpdate;
-    }
-
-    examine() {
-        const messageMap = {};
+    get rawValues() {
+        const _values = {};
 
         for (let pathData of this) {
-            const iterator = pathData.examine();
-            const messages = [];
-
-            for (let message of iterator) {
-                messages.push(message);
-            }
-
-            if (messages.length > 0) {
-                messageMap[pathData.path.name] = messages;
-            }
+            _values[pathData.name] = pathData.rawValue;
         }
 
-        return messageMap;
+        return _values;
+    }
+
+    get errorMessages () {
+        return this._errorMessageMap;
     }
 
     toJSON() {
         return this.projectedValues;
+    }
+}
+
+const inspectErrors = (schemaModel, updated) => {
+
+    const messageMap = {};
+
+    for (let pathData of schemaModel) {
+        const iterator = pathData.inspectErrors({updated});
+        const messages = [];
+
+        for (let message of iterator) {
+            messages.push(message);
+        }
+
+        if (messages.length > 0) {
+            messageMap[pathData.path.name] = messages;
+        }
+    }
+
+    return messageMap;
+
+};
+
+export class InspectedCreatedSchemaModel extends SchemaModel {
+
+    constructor (...args) {
+        super(...args);
+
+        const errorMap = inspectErrors(this, false);
+
+        for (let key of Object.keys(errorMap))
+        {
+            this._errorMessageMap[key] = errorMap[key];
+        }
+
+        Object.freeze(this._errorMessageMap);
+    }
+
+}
+
+export class InspectedUpdatedSchemaModel extends SchemaModel {
+
+    constructor(...args) {
+        super(...args);
+
+        const errorMap = inspectErrors(this, true);
+
+        for (let key of Object.keys(errorMap)) {
+            this._errorMessageMap[key] = errorMap[key];
+        }
+
+        Object.freeze(this._errorMessageMap);
     }
 }
