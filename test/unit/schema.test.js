@@ -4,9 +4,12 @@ import Schema from '../../src/schema';
 import { Types } from '../../src/type';
 import { SimpleOdmError } from '../../src/errors';
 
-describe('schema', function () {
-    it('should throw an error if some arguments are invalid.', (done) => {
-        co(function* () {
+describe('schema', function ()
+{
+    it('should throw an error if some arguments are invalid.', (done) =>
+    {
+        co(function* ()
+        {
             let error;
 
             try {
@@ -49,13 +52,16 @@ describe('schema', function () {
             expect(error.message).to.equal('A paths argument has to be an object.');
 
             done();
-        }).catch((e) => {
+        }).catch((e) =>
+        {
             done(e);
         });
     });
 
-    it('should create a schema.', (done) => {
-        co(function* () {
+    it('should create a schema.', (done) =>
+    {
+        co(function* ()
+        {
             const schema = new Schema({
                 name: 'user',
                 paths: {
@@ -69,8 +75,37 @@ describe('schema', function () {
             expect(schema.paths.email.type).to.equal(Types.String);
 
             done();
-        }).catch((e) => {
+        }).catch((e) =>
+        {
             done(e);
         });
     });
+
+    it('should throw an error if onCreate hook returns a non-SchemaData object as the value of its resolved Promise.', (done) =>
+    {
+        co(function* ()
+        {
+            let error;
+
+            try {
+                new Schema({
+                    name: 'user',
+                    paths: {
+                        email: {}
+                    },
+                    onCreate: data => data
+                });
+            } catch (e) {
+                error = e || null;
+            }
+
+            expect(error.message).to.equal('The return value of onCreate has to be a Promise object.');
+
+            done();
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
+
 });
