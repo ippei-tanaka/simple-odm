@@ -1,9 +1,11 @@
 import co from 'co';
-import { SchemaModel, InspectedCreatedSchemaModel, InspectedUpdatedSchemaModel } from './schema-model';
+import schemaFunctions from './schema-functions';
+import SchemaData from './schema-data';
+import Immutable from 'immutable';
 
-export default class ModelManager {
+export default class Model {
 
-    static createModelManager({operator, schema}) {
+    static bindDependencies({operator, schema}) {
         return this.bind(null, operator, schema);
     }
 
@@ -12,10 +14,12 @@ export default class ModelManager {
      * @param schema {Schema}
      */
     constructor(operator,
-                schema)
+                schema,
+                values)
     {
         this._schema = schema;
         this._operator = operator;
+        this._values = Immutable.Map(values);
         Object.freeze(this);
     }
 
@@ -45,13 +49,23 @@ export default class ModelManager {
         }.bind(this));
     }
 
-    create (values) {
-        const Model = InspectedCreatedSchemaModel.createModel({schema: this._schema});
-        const model = new Model(values);
+    save () {
+        const schema = this._schema;
+        const values = this._values;
         const operator = this._operator;
 
         return co(function* () {
-            return yield operator.insertOne(model);
+            const errorMessages = yield schemaFunctions.inspectErrorsOnCreate({schema, values});
+
+            let data = new SchemaData({values, errorMessages});
+
+            data = yield schemaFunctions.executeOnCreateHook({schema, data});
+
+            if (data.hasErrors) {
+                throw data.errorMessages.toJS();
+            }
+
+            return yield operator.insertOne(data.values.toJS());
         });
     }
 
