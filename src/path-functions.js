@@ -50,4 +50,15 @@ const inspectErrors = ({path, value, updated}) =>
         return errorMessages;
     });
 
-export default {inspectErrors};
+/**
+ * @param path {Path}
+ * @param value {*}
+ * @returns {Promise.<*>}
+ */
+const getProcessedValue = ({path, value}) =>
+    co(function* ()
+    {
+        return path.sanitizer(convertTo(value, path.type));
+    });
+
+export default {inspectErrors, getProcessedValue};
