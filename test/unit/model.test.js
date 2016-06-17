@@ -4,7 +4,7 @@ import validator from 'validator';
 import { Types } from '../../src/type';
 import Schema from '../../src/schema';
 import SchemaData from '../../src/schema-data';
-import Model from '../../src/model';
+import ModelBuilder from '../../src/model-builder';
 
 describe('model', function ()
 {
@@ -16,7 +16,6 @@ describe('model', function ()
         {
             co(function* ()
             {
-
                 const schema = new Schema({
                     name: 'user',
                     paths: {
@@ -38,7 +37,7 @@ describe('model', function ()
                     insertOne: (v) => Promise.resolve(null)
                 };
 
-                const User = Model.bindDependencies({operator, schema});
+                const User = ModelBuilder.buildModel({operator, schema});
 
                 const model = new User({
                     email: "test"
@@ -86,7 +85,7 @@ describe('model', function ()
                     insertOne: (v) => Promise.resolve(null)
                 };
 
-                const User = Model.bindDependencies({operator, schema});
+                const User = ModelBuilder.buildModel({operator, schema});
 
                 const model = new User({
                     email: "test"
@@ -106,7 +105,6 @@ describe('model', function ()
                 expect(response).to.be.an('undefined');
                 expect(error.message).to
                                      .equal('The value of the resolved Promise object returned from onCreate has to be a SchemaData object.');
-
                 done();
 
             }).catch((e) =>
@@ -119,7 +117,6 @@ describe('model', function ()
         {
             co(function* ()
             {
-
                 const schema = new Schema({
                     name: 'user',
                     paths: {
@@ -135,7 +132,7 @@ describe('model', function ()
                     insertOne: (v) => Promise.resolve("Would save the model to the DB!")
                 };
 
-                const User = Model.bindDependencies({operator, schema});
+                const User = ModelBuilder.buildModel({operator, schema});
 
                 const model = new User({
                     email: "test"
@@ -167,7 +164,6 @@ describe('model', function ()
         {
             co(function* ()
             {
-
                 const schema = new Schema({
                     name: 'user',
                     paths: {
@@ -190,7 +186,7 @@ describe('model', function ()
                     insertOne: (v) => Promise.resolve("Would save the model to the DB!")
                 };
 
-                const User = Model.bindDependencies({operator, schema});
+                const User = ModelBuilder.buildModel({operator, schema});
 
                 const model = new User({
                     email: "test"
