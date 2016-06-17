@@ -7,7 +7,7 @@ export default class SchemaData {
      * @param values {object}
      * @param errorMessages {object.<Array.<string>>}
      */
-    constructor ({values, errorMessages})
+    constructor ({values = {}, errorMessages = {}} = {})
     {
         if (typeof values !== 'object' || values === null)
         {
@@ -19,7 +19,8 @@ export default class SchemaData {
             throw new SimpleOdmError("The errorMessages argument has to be an object");
         }
 
-        for (let key of Object.keys(errorMessages)) {
+        for (let key of Object.keys(errorMessages))
+        {
             const messageList = errorMessages[key];
 
             if (!Array.isArray(messageList))

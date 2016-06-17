@@ -1,7 +1,9 @@
 import co from 'co';
-import schemaFunctions from './schema-functions';
-import SchemaData from './schema-data';
 import { SimpleOdmError } from './errors';
+import Immutable from 'immutable';
+import Schema from './schema';
+import pathFunctions from './path-functions';
+
 
 class Model {
 
@@ -10,11 +12,21 @@ class Model {
      * @param schema {Schema}
      * @param values {object}
      */
-    constructor ({operator, schema}, values)
+    constructor ({operator, schema}, values = {})
     {
+        if (typeof values !== 'object' || values === null)
+        {
+            throw new SimpleOdmError("The values argument has to be an object");
+        }
+
         this._schema = schema;
         this._operator = operator;
-        this._values = values;
+
+        this._state = {
+            dataList: Immutable.fromJS([values]),
+            errorList: Immutable.List()
+        };
+
         Object.freeze(this);
     }
 
@@ -48,27 +60,99 @@ class Model {
         });
     }
 
-    save ()
+    executeOnSaveHook ()
     {
-        const operator = this._operator;
         const schema = this._schema;
-        const values = this._values;
+        const model = this;
 
         return co(function* ()
         {
-            const errorMessages = yield schemaFunctions.inspectErrorsOnCreate({schema, values});
+            return schema.emit(Schema.ON_SAVE, model);
+        })
+    }
 
-            let data = new SchemaData({values, errorMessages});
+    inspectErrors ()
+    {
+        const schema = this._schema;
+        const updated = this.isUpdated;
+        const values = this.values;
 
-            data = yield schemaFunctions.executeOnCreateHook({schema, data});
+        return co(function* ()
+        {
+            let errorMessages = {};
 
-            if (data.hasErrors)
+            for (let path of schema)
             {
-                throw data.errorMessages;
+                const value = values[path.name];
+                errorMessages[path.name] = yield pathFunctions.inspectErrors({path, value, updated});
             }
 
-            return yield operator.insertOne(data.values);
+            return errorMessages;
         });
+    }
+
+    get processedValues () {
+        const schema = this._schema;
+        const values = this.values;
+
+        return co(function* ()
+        {
+            let obj = {};
+
+            for (let path of schema)
+            {
+                const value = values[path.name];
+
+                try {
+                    obj[path.name] = yield pathFunctions.getProcessedValue({path, value});
+                } catch (e) {}
+            }
+
+            return obj;
+        })
+    }
+
+    get values ()
+    {
+        return this._state.dataList.last().toJS();
+    }
+
+    set values (values)
+    {
+        this._state.dataList = this._state.dataList.push(Immutable.fromJS(values));
+    }
+
+    get errors ()
+    {
+        return this._state.errorList.last().toJS();
+    }
+
+    set errors (errors)
+    {
+        this._state.errorList = this._state.errorList.push(Immutable.fromJS(errors));
+    }
+
+    get isUpdated ()
+    {
+        return this._state.dataList.size > 1;
+    }
+
+    save ()
+    {
+        return co(function* ()
+        {
+            this.errors = yield this.inspectErrors();
+
+            yield this.executeOnSaveHook();
+
+            if (this._state.errorList.last().filter((v) => v.size > 0).size > 0)
+            {
+                throw this.errors;
+            }
+
+            return yield this._operator.insertOne(this.processedValues);
+
+        }.bind(this));
     }
 
 }

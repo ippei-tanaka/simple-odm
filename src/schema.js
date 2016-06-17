@@ -1,11 +1,13 @@
 import co from 'co';
+import EventEmitter from 'events';
 import Path from './path';
-import SchemaData from './schema-data';
 import { SimpleOdmError } from './errors';
 
+const ON_SAVE_EVENT = Symbol();
+
 /**
- * @param data {SchemaData}
- * @returns {Promise.<SchemaData>}
+ * @param data {object}
+ * @returns {Promise.<object>}
  */
 const defaultOnCreate = data => co(function* ()
 {
@@ -13,8 +15,8 @@ const defaultOnCreate = data => co(function* ()
 });
 
 /**
- * @param data {SchemaData}
- * @returns {Promise.<SchemaData>}
+ * @param data {object}
+ * @returns {Promise.<object>}
  */
 const defaultOnUpdate = data => co(function* ()
 {
@@ -26,71 +28,31 @@ export default class Schema {
     /**
      * @param name {string}
      * @param paths {object}
-     * @param onCreate {function}
-     * @param onUpdate {function}
      */
-    constructor(
-        {
-            name,
-            paths = {},
-            onCreate,
-            onUpdate}
-    )
+    constructor ({name, paths = {}})
     {
 
-        if (typeof name !== "string") {
+        if (typeof name !== "string")
+        {
             throw new SimpleOdmError('A schema name has to be string.');
         }
 
         if (typeof paths !== "object"
             || paths === null
-            || Array.isArray(paths)) {
+            || Array.isArray(paths))
+        {
             throw new SimpleOdmError('A paths argument has to be an object.');
-        }
-
-        if (onCreate && typeof onCreate !== 'function') {
-            throw new SimpleOdmError('onCreate has to be a function.');
-        }
-
-        if (onUpdate && typeof onUpdate !== 'function') {
-            throw new SimpleOdmError('onUpdate has to be a function.');
-        }
-
-        const emptySchemaData = new SchemaData({
-            values: {},
-            errorMessages: {}
-        });
-
-        onCreate = onCreate || defaultOnCreate;
-
-        {
-            const promise = onCreate(emptySchemaData);
-
-            if (!(promise instanceof Promise)) {
-                throw new SimpleOdmError("The return value of onCreate has to be a Promise object.");
-            }
-        }
-
-        onUpdate = onUpdate || defaultOnUpdate;
-
-        {
-            const promise = onUpdate(emptySchemaData);
-
-            if (!(promise instanceof Promise)) {
-                throw new SimpleOdmError("The return value of onUpdate has to be a Promise object.");
-            }
         }
 
         this._name = name;
 
         this._paths = {};
-        for (let pathName of Object.keys(paths)) {
+        for (let pathName of Object.keys(paths))
+        {
             this._paths[pathName] = new Path(pathName, paths[pathName]);
         }
 
-        this._onCreate = onCreate;
-
-        this._onUpdate = onUpdate;
+        this._emitter = new EventEmitter();
 
         Object.freeze(this._paths);
         Object.freeze(this);
@@ -98,7 +60,8 @@ export default class Schema {
 
     *[Symbol.iterator] ()
     {
-        for (let pathName of Object.keys(this._paths)) {
+        for (let pathName of Object.keys(this._paths))
+        {
             yield this._paths[pathName];
         }
     }
@@ -106,7 +69,7 @@ export default class Schema {
     /**
      * @returns {string}
      */
-    get name()
+    get name ()
     {
         return this._name;
     }
@@ -114,38 +77,24 @@ export default class Schema {
     /**
      * @returns {Object.<Path>}
      */
-    get paths()
+    get paths ()
     {
         return this._paths;
     }
 
-    /**
-     * @param data {SchemaData}
-     * @returns {Promise.<SchemaData>}
-     */
-    onCreate(data)
+    static get ON_SAVE ()
     {
-        return this._onCreate(data).then(value =>
-        {
-            if (!(value instanceof SchemaData)) {
-                throw new SimpleOdmError("The value of the resolved Promise object returned from onCreate has to be a SchemaData object.");
-            }
-            return value;
-        });
+        return ON_SAVE_EVENT;
     }
 
-    /**
-     * @param data {SchemaData}
-     * @returns {Promise.<SchemaData>}
-     */
-    onUpdate(data)
+    get on ()
     {
-        return this._onUpdate(data).then(value =>
-        {
-            if (!(value instanceof SchemaData)) {
-                throw new SimpleOdmError("The value of the resolved Promise object returned from onUpdate has to be a SchemaData object.");
-            }
-            return value;
-        });
+        return this._emitter.on.bind(this._emitter);
     }
+
+    get emit ()
+    {
+        return this._emitter.emit.bind(this._emitter);
+    }
+
 }

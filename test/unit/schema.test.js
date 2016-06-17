@@ -81,31 +81,4 @@ describe('schema', function ()
         });
     });
 
-    it('should throw an error if onCreate hook returns a non-SchemaData object as the value of its resolved Promise.', (done) =>
-    {
-        co(function* ()
-        {
-            let error;
-
-            try {
-                new Schema({
-                    name: 'user',
-                    paths: {
-                        email: {}
-                    },
-                    onCreate: data => data
-                });
-            } catch (e) {
-                error = e || null;
-            }
-
-            expect(error.message).to.equal('The return value of onCreate has to be a Promise object.');
-
-            done();
-        }).catch((e) =>
-        {
-            done(e);
-        });
-    });
-
 });
