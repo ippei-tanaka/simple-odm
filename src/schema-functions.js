@@ -1,22 +1,21 @@
 import co from 'co';
 import pathFunctions from './path-functions';
-import Immutable from 'immutable';
 
 /**
  * @param schema {Schema}
- * @param values {Immutable.Map}
+ * @param values {object}
  * @param updated {boolean}
- * @return {Promise.<Immutable.Map>}
+ * @return {Promise.<object>}
  */
 const inspectErrors = ({schema, values, updated}) =>
     co(function* ()
     {
-        let errorMessages = Immutable.Map();
+        let errorMessages = {};
 
-        for (let path of schema) {
-            const value = values.get(path.name);
-            const messageList = yield pathFunctions.inspectErrors({path, value, updated});
-            errorMessages = errorMessages.set(path.name, messageList);
+        for (let path of schema)
+        {
+            const value = values[path.name];
+            errorMessages[path.name] = yield pathFunctions.inspectErrors({path, value, updated});
         }
 
         return errorMessages;
@@ -24,8 +23,8 @@ const inspectErrors = ({schema, values, updated}) =>
 
 /**
  * @param schema {Schema}
- * @param values {Immutable.Map}
- * @returns {Promise.<Immutable.Map>}
+ * @param values {object}
+ * @returns {Promise.<object>}
  */
 const inspectErrorsOnCreate = ({schema, values}) =>
 {
@@ -34,8 +33,8 @@ const inspectErrorsOnCreate = ({schema, values}) =>
 
 /**
  * @param schema {Schema}
- * @param values {Immutable.Map}
- * @returns {Promise.<Immutable.Map>}
+ * @param values {object}
+ * @returns {Promise.<object>}
  */
 const inspectErrorsOnUpdate = ({schema, values}) =>
 {
@@ -52,8 +51,19 @@ const executeOnCreateHook = ({schema, data}) =>
         return yield schema.onCreate(data);
     });
 
+/**
+ * @param schema {Schema}
+ * @param data {SchemaData}
+ */
+const executeOnUpdateHook = ({schema, data}) =>
+    co(function* ()
+    {
+        return yield schema.onUpdate(data);
+    });
+
 export default {
     inspectErrorsOnCreate,
     inspectErrorsOnUpdate,
-    executeOnCreateHook
+    executeOnCreateHook,
+    executeOnUpdateHook
 }

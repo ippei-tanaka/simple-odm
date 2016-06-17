@@ -1,86 +1,82 @@
 import co from 'co';
 import schemaFunctions from './schema-functions';
 import SchemaData from './schema-data';
-import Immutable from 'immutable';
+import { SimpleOdmError } from './errors';
 
 export default class Model {
 
-    static bindDependencies({operator, schema}) {
+    static bindDependencies ({operator, schema})
+    {
         return this.bind(null, operator, schema);
     }
 
     /**
      * @param operator {CrudOperator}
      * @param schema {Schema}
+     * @param values {object}
      */
-    constructor(operator,
-                schema,
-                values)
+    constructor (operator, schema, values)
     {
         this._schema = schema;
         this._operator = operator;
-        this._values = Immutable.Map(values);
+        this._values = values;
         Object.freeze(this);
     }
 
-    findMany({query = {}, sort = {}, limit = 0, skip = 0} = {}) {
-        const Model = SchemaModel.createModel({schema: this._schema});
+    findMany ({query = {}, sort = {}, limit = 0, skip = 0} = {})
+    {
+        const Model = this;
         const operator = this._operator;
 
-        return co(function* () {
+        return co(function* ()
+        {
             const docs = yield operator.findMany(query, sort, limit, skip);
             return docs.map(doc => new Model(doc));
         });
     }
 
-    findOne(query) {
-        const Model = SchemaModel.createModel({schema: this._schema});
+    findOne (query)
+    {
+        const Model = this;
         const operator = this._operator;
 
-        return co(function* () {
+        return co(function* ()
+        {
             const doc = yield operator.findOne(query);
             return doc ? new Model(doc) : null;
         });
     }
 
-    aggregate(query) {
-        return co(function* () {
-            return yield this._operator.aggregate(query);
-        }.bind(this));
+    aggregate (query)
+    {
+        const operator = this._operator;
+
+        return co(function* ()
+        {
+            return yield operator.aggregate(query);
+        });
     }
 
-    save () {
+    save ()
+    {
         const schema = this._schema;
         const values = this._values;
         const operator = this._operator;
 
-        return co(function* () {
+        return co(function* ()
+        {
             const errorMessages = yield schemaFunctions.inspectErrorsOnCreate({schema, values});
 
             let data = new SchemaData({values, errorMessages});
 
             data = yield schemaFunctions.executeOnCreateHook({schema, data});
 
-            if (data.hasErrors) {
-                throw data.errorMessages.toJS();
+            if (data.hasErrors)
+            {
+                throw data.errorMessages;
             }
 
-            return yield operator.insertOne(data.values.toJS());
-        });
-    }
-
-    update (query, values) {
-        const Model = InspectedUpdatedSchemaModel.createModel({schema: this._schema});
-
-        return co(function* () {
-            const originalModel = yield findOne(query);
-            const updatedModel = new Model(originalModel, values);
-
-            //const errorMap = model.examine();
-            //const ret = yield model.onCreate(errorMap);
-            return yield this._executeDbOperation(ret);
-        }.bind(this)).catch((errorMap) => {
-            throw new ValidationErrorMap(errorMap);
+            return yield operator.insertOne(data.values);
         });
     }
 

@@ -4,21 +4,27 @@ import { SimpleOdmError } from './errors';
 export default class SchemaData {
 
     /**
-     * @param values {Immutable.Map.<*>}
-     * @param errorMessages {Immutable.Map.<Immutable.List.<string>>}
+     * @param values {object}
+     * @param errorMessages {object.<Array.<string>>}
      */
     constructor ({values, errorMessages})
     {
-        if (!(errorMessages instanceof Immutable.Map))
+        if (typeof values !== 'object' || values === null)
         {
-            throw new SimpleOdmError("The errorMessages argument has to be Immutable.Map");
+            throw new SimpleOdmError("The values argument has to be an object");
         }
 
-        errorMessages.forEach((messageList) =>
+        if (typeof errorMessages !== 'object' || errorMessages === null)
         {
-            if (!(messageList instanceof Immutable.List))
+            throw new SimpleOdmError("The errorMessages argument has to be an object");
+        }
+
+        for (let key of Object.keys(errorMessages)) {
+            const messageList = errorMessages[key];
+
+            if (!Array.isArray(messageList))
             {
-                throw new SimpleOdmError("Each value of errorMessages argument has to be Immutable.List");
+                throw new SimpleOdmError("Each value of errorMessages argument has to be an array");
             }
 
             messageList.forEach((message) =>
@@ -28,21 +34,22 @@ export default class SchemaData {
                     throw new SimpleOdmError("Each value of errorMessages argument List has to be string");
                 }
             })
-        });
+        }
 
-        this._values = values;
-        this._errorMessages = errorMessages;
+        this._values = Immutable.fromJS(values);
+        this._errorMessages = Immutable.fromJS(errorMessages);
+
         Object.freeze(this);
     }
 
     get values ()
     {
-        return this._values;
+        return this._values.toJS();
     }
 
     get errorMessages ()
     {
-        return this._errorMessages;
+        return this._errorMessages.toJS();
     }
 
     get hasErrors ()
@@ -54,6 +61,7 @@ export default class SchemaData {
                 return true;
             }
         }
+
         return false;
     }
 
