@@ -3,19 +3,14 @@ import schemaFunctions from './schema-functions';
 import SchemaData from './schema-data';
 import { SimpleOdmError } from './errors';
 
-export default class Model {
-
-    static bindDependencies ({operator, schema})
-    {
-        return this.bind(null, operator, schema);
-    }
+class Model {
 
     /**
      * @param operator {CrudOperator}
      * @param schema {Schema}
      * @param values {object}
      */
-    constructor (operator, schema, values)
+    constructor ({operator, schema}, values)
     {
         this._schema = schema;
         this._operator = operator;
@@ -23,34 +18,30 @@ export default class Model {
         Object.freeze(this);
     }
 
-    findMany ({query = {}, sort = {}, limit = 0, skip = 0} = {})
+    static findMany ({operator, schema}, {query = {}, sort = {}, limit = 0, skip = 0} = {})
     {
-        const Model = this;
-        const operator = this._operator;
+        const ThisModel = this;
 
         return co(function* ()
         {
             const docs = yield operator.findMany(query, sort, limit, skip);
-            return docs.map(doc => new Model(doc));
+            return docs.map(doc => new ThisModel(doc));
         });
     }
 
-    findOne (query)
+    static findOne ({operator, schema}, query)
     {
-        const Model = this;
-        const operator = this._operator;
+        const ThisModel = this;
 
         return co(function* ()
         {
             const doc = yield operator.findOne(query);
-            return doc ? new Model(doc) : null;
+            return doc ? new ThisModel(doc) : null;
         });
     }
 
-    aggregate (query)
+    static aggregate ({operator, schema}, query)
     {
-        const operator = this._operator;
-
         return co(function* ()
         {
             return yield operator.aggregate(query);
@@ -59,9 +50,9 @@ export default class Model {
 
     save ()
     {
+        const operator = this._operator;
         const schema = this._schema;
         const values = this._values;
-        const operator = this._operator;
 
         return co(function* ()
         {
@@ -81,3 +72,7 @@ export default class Model {
     }
 
 }
+
+Object.freeze(Model);
+
+export default Model;

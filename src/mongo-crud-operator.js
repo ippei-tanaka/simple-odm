@@ -12,13 +12,13 @@ const connectToCollection = function (driver, collectionName)
 
 class MongoCrudOperator extends CrudOperator {
 
-    static bindOperator (driver, collectionName)
+    static bindDependencies (driver, collectionName)
     {
         const obj = {};
 
         for (let key of Object.getOwnPropertyNames(this))
         {
-            if (typeof this[key] === "function" && key !== "bindOperator")
+            if (typeof this[key] === "function" && key !== "bindDependencies")
             {
                 obj[key] = this[key].bind(this, driver, collectionName);
             }

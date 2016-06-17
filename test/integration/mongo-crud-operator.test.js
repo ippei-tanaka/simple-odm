@@ -17,7 +17,7 @@ describe('mongo-crud-operator', function () {
 
     it('should insert docs.', (done) => {
         co(function* () {
-            const operator = MongoCrudOperator.bindOperator(MongoDriver, 'persons');
+            const operator = MongoCrudOperator.bindDependencies(MongoDriver, 'persons');
 
             const res1 = yield operator.insertOne({
                 name: "M",
@@ -40,7 +40,7 @@ describe('mongo-crud-operator', function () {
 
     it('should find docs.', (done) => {
         co(function* () {
-            const operator = MongoCrudOperator.bindOperator(MongoDriver, 'persons');
+            const operator = MongoCrudOperator.bindDependencies(MongoDriver, 'persons');
 
             const res1 = yield operator.insertOne({
                 name: "M",
