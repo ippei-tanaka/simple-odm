@@ -75,7 +75,7 @@ class Model {
     {
         const schema = this._schema;
         const updated = this.isUpdated;
-        const values = this.values;
+        const values = this.getValues();
 
         return co(function* ()
         {
@@ -91,9 +91,9 @@ class Model {
         });
     }
 
-    get processedValues () {
+    getProcessedValues () {
         const schema = this._schema;
-        const values = this.values;
+        const values = this.getValues();
 
         return co(function* ()
         {
@@ -112,22 +112,22 @@ class Model {
         })
     }
 
-    get values ()
+    getValues ()
     {
         return this._state.dataList.last().toJS();
     }
 
-    set values (values)
+    setValues (values)
     {
         this._state.dataList = this._state.dataList.push(Immutable.fromJS(values));
     }
 
-    get errors ()
+    getErrors ()
     {
         return this._state.errorList.last().toJS();
     }
 
-    set errors (errors)
+    setErrors (errors)
     {
         this._state.errorList = this._state.errorList.push(Immutable.fromJS(errors));
     }
@@ -141,16 +141,16 @@ class Model {
     {
         return co(function* ()
         {
-            this.errors = yield this.inspectErrors();
+            this.setErrors(yield this.inspectErrors());
 
             yield this.executeOnSaveHook();
 
             if (this._state.errorList.last().filter((v) => v.size > 0).size > 0)
             {
-                throw this.errors;
+                throw this.getErrors();
             }
 
-            return yield this._operator.insertOne(this.processedValues);
+            return yield this._operator.insertOne(this.getProcessedValues());
 
         }.bind(this));
     }

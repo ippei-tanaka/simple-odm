@@ -151,7 +151,7 @@ describe('model', function ()
             });
         });
 
-        it('should let onCreate return a new SchemeData object.', (done) =>
+        it('should let ON_SAVE hook modify the error messages.', (done) =>
         {
             co(function* ()
             {
@@ -166,9 +166,9 @@ describe('model', function ()
 
                 schema.on(Schema.ON_SAVE, (model) => co(function* ()
                 {
-                    model.errors = {
+                    model.setErrors({
                         fake_email: ["Oh, no!", "You added something new!"]
-                    }
+                    });
                 }));
 
                 const operator = {
