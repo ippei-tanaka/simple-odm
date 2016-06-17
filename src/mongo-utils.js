@@ -1,34 +1,52 @@
 import co from 'co';
-import driver from './mongo-driver';
+import DbUtils from './db-utils';
 
-const createUniqueIndex = (collectionName, pathName) => co(function* () {
-    return createIndex(collectionName, pathName, {unique: true});
-});
+class MongoUtils extends DbUtils {
 
-const createIndex = (collectionName, pathName, options) => co(function* () {
-    const db = yield driver.connect();
-    return yield db.collection(collectionName).createIndex({[pathName]: 1}, options);
-});
+    static createUniqueIndex (driver, collectionName, pathName)
+    {
+        return this.createIndex(driver, collectionName, pathName, {unique: true});
+    }
 
-const getIndexInfo = (collectionName, pathName) => co(function* () {
-    const db = yield driver.connect();
-    return yield db.collection(collectionName).indexInformation(pathName);
-});
+    static createIndex (driver, collectionName, pathName, options)
+    {
+        return co(function* ()
+        {
+            const db = yield driver.connect();
+            return yield db.collection(collectionName)
+                           .createIndex({[pathName]: 1}, options);
+        });
+    }
 
-const dropIndex = (collectionName, pathName) => co(function* () {
-    const db = yield driver.connect();
-    return yield db.collection(collectionName).dropIndex(pathName);
-});
+    static getIndexInfo (driver, collectionName, pathName)
+    {
+        return co(function* ()
+        {
+            const db = yield driver.connect();
+            return yield db.collection(collectionName).indexInformation(pathName);
+        });
+    }
 
-const dropDatabase = () => co(function* () {
-    const db = yield driver.connect();
-    yield db.dropDatabase();
-});
+    static  dropIndex (driver, collectionName, pathName)
+    {
+        return co(function* ()
+        {
+            const db = yield driver.connect();
+            return yield db.collection(collectionName).dropIndex(pathName);
+        });
+    }
 
-export default {
-    createUniqueIndex,
-    createIndex,
-    dropIndex,
-    getIndexInfo,
-    dropDatabase
-};
+    static dropDatabase (driver)
+    {
+        return co(function* ()
+        {
+            const db = yield driver.connect();
+            yield db.dropDatabase();
+        });
+    }
+
+}
+
+Object.freeze(MongoUtils);
+
+export default MongoUtils;

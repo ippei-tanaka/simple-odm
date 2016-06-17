@@ -1,24 +1,24 @@
 import co from 'co';
 import { expect } from 'chai';
-import mongoDriver from '../../src/mongo-driver';
-import mongoUtils from '../../src/mongo-utils';
+import MongoDriver from '../../src/mongo-driver';
+import MongoUtils from '../../src/mongo-utils';
 
 const DB_NAME = "simple-odm";
 
 describe('mongo-utils', function () {
 
-    before(() => mongoDriver.setUp({database: DB_NAME}));
-    beforeEach(mongoDriver.connect);
-    beforeEach(mongoUtils.dropDatabase);
-    beforeEach(mongoDriver.disconnect);
+    before(() => MongoDriver.setUp({database: DB_NAME}));
+    beforeEach(MongoDriver.connect);
+    beforeEach(() => MongoUtils.dropDatabase(MongoDriver));
+    beforeEach(MongoDriver.disconnect);
 
-    this.timeout(5000);
+    this.timeout(10000);
 
     it('should create a unique index.', (done) => {
         co(function* () {
-            const res1 = yield mongoUtils.createUniqueIndex('users', 'email');
-            const res2 = yield mongoUtils.createUniqueIndex('users', 'email');
-            const info = yield mongoUtils.getIndexInfo('users', 'email');
+            const res1 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
+            const res2 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
+            const info = yield MongoUtils.getIndexInfo(MongoDriver, 'users', 'email');
             expect(res1).to.equal('email_1');
             expect(res2).to.equal('email_1');
             expect(info).to.not.equal(null);

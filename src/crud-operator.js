@@ -1,30 +1,40 @@
-/**
- * @class CrudOperator
- */
-export default Object.freeze({
+import { SimpleOdmError } from './errors';
 
-    findMany: () => {
-        throw new Error("Implement findMany")
-    },
+export default class CrudOperator {
 
-    findOne: () => {
-        throw new Error("Implement findOne")
-    },
-
-    insertOne: () => {
-        throw new Error("Implement insertOne")
-    },
-
-    updateOne: () => {
-        throw new Error("Implement updateOne")
-    },
-
-    deleteOne: () => {
-        throw new Error("Implement deleteOne")
-    },
-
-    aggregate: () => {
-        throw new Error("Implement aggregate")
+    constructor ()
+    {
+        throw new SimpleOdmError("Cannot create an instance of CrudOperator class");
     }
 
-});
+    static findMany ()
+    {
+        throw new SimpleOdmError("Implement findMany")
+    }
+
+    static findOne ()
+    {
+        throw new SimpleOdmError("Implement findOne")
+    }
+
+    static insertOne ()
+    {
+        throw new SimpleOdmError("Implement insertOne")
+    }
+
+    static updateOne ()
+    {
+        throw new SimpleOdmError("Implement updateOne")
+    }
+
+    static deleteOne ()
+    {
+        throw new SimpleOdmError("Implement deleteOne")
+    }
+
+    static aggregate ()
+    {
+        throw new SimpleOdmError("Implement aggregate")
+    }
+
+}
