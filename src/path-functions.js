@@ -1,7 +1,6 @@
 import co from 'co';
 import { convertTo } from './type';
 import { SimpleOdmError } from './errors';
-import Immutable from 'immutable';
 
 /**
  * @param value {*}
@@ -13,20 +12,22 @@ const checkIfEmpty = (value) => value === "" || value === undefined;
  * @param path {Path}
  * @param value {*}
  * @param updated {boolean}
- * @returns {Promise.<Immutable.List>}
+ * @returns {Promise.<Array>}
  */
 const inspectErrors = ({path, value, updated}) =>
     co(function* ()
     {
-        let errorMessages = Immutable.List();
+        let errorMessages = [];
         const isEmpty = checkIfEmpty(value);
 
         if (isEmpty && !updated && path.isRequiredWhenCreated) {
-            return errorMessages.push(path.requiredWhenCreatedErrorMessageBuilder());
+            errorMessages.push(path.requiredWhenCreatedErrorMessageBuilder());
+            return errorMessages;
         }
 
         if (isEmpty && updated && path.isRequiredWhenUpdated) {
-            return errorMessages.push(path.requiredWhenUpdatedErrorMessageBuilder());
+            errorMessages.push(path.requiredWhenUpdatedErrorMessageBuilder());
+            return errorMessages;
         }
 
         if (isEmpty) {
@@ -36,13 +37,14 @@ const inspectErrors = ({path, value, updated}) =>
         try {
             convertTo(value, path.type);
         } catch (error) {
-            return errorMessages.push(path.typeErrorMessageBuilder(value));
+            errorMessages.push(path.typeErrorMessageBuilder(value));
+            return errorMessages;
         }
 
         const iterator = path.validator(path.sanitizer(value));
 
         for (let message of iterator) {
-            errorMessages = errorMessages.push(message);
+            errorMessages.push(message);
         }
 
         return errorMessages;

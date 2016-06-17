@@ -5,7 +5,6 @@ import { Types } from '../../src/type';
 import Schema from '../../src/schema';
 import SchemaData from '../../src/schema-data';
 import Model from '../../src/model';
-import Immutable from 'immutable';
 
 describe('model', function ()
 {
@@ -26,7 +25,8 @@ describe('model', function ()
                             required: true,
                             validate: function* (v)
                             {
-                                if (!validator.isEmail(v)) {
+                                if (!validator.isEmail(v))
+                                {
                                     yield `"${v}" is not a valid email.`;
                                 }
                             }
@@ -47,9 +47,11 @@ describe('model', function ()
                 let error;
                 let response;
 
-                try {
+                try
+                {
                     response = yield model.save();
-                } catch (e) {
+                } catch (e)
+                {
                     error = e || null;
                 }
 
@@ -93,14 +95,17 @@ describe('model', function ()
                 let error;
                 let response;
 
-                try {
+                try
+                {
                     response = yield model.save();
-                } catch (e) {
+                } catch (e)
+                {
                     error = e || null;
                 }
 
                 expect(response).to.be.an('undefined');
-                expect(error.message).to.equal('The value of the resolved Promise object returned from onCreate has to be a SchemaData object.');
+                expect(error.message).to
+                                     .equal('The value of the resolved Promise object returned from onCreate has to be a SchemaData object.');
 
                 done();
 
@@ -139,9 +144,11 @@ describe('model', function ()
                 let error;
                 let response;
 
-                try {
+                try
+                {
                     response = yield model.save();
-                } catch (e) {
+                } catch (e)
+                {
                     error = e || null;
                 }
 
@@ -168,14 +175,13 @@ describe('model', function ()
                             required: true
                         }
                     },
-                    onCreate: data => co(function* () {
+                    onCreate: data => co(function* ()
+                    {
                         return new SchemaData({
                             values: data.values,
-                            errorMessages: data.errorMessages
-                                .set('fake_email', Immutable.List.of(
-                                    "Oh, no!",
-                                    "You added something new!"
-                                ))
+                            errorMessages: {
+                                fake_email: ["Oh, no!", "You added something new!"]
+                            }
                         })
                     })
                 });
@@ -193,15 +199,17 @@ describe('model', function ()
                 let error;
                 let response;
 
-                try {
+                try
+                {
                     response = yield model.save();
-                } catch (e) {
+                } catch (e)
+                {
                     error = e || null;
                 }
 
                 expect(response).to.be.an('undefined');
                 expect(error.fake_email[0]).to.equal("Oh, no!");
-                expect(error.fake_email[1]).to.equal( "You added something new!");
+                expect(error.fake_email[1]).to.equal("You added something new!");
 
                 done();
             }).catch((e) =>

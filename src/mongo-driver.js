@@ -24,11 +24,13 @@ class MongoDriver extends Driver {
     {
         return co(function* ()
         {
-            if (!setting.database) {
+            if (!setting.database)
+            {
                 throw new SimpleOdmError("MongoDriver needs a database name to use.");
             }
 
-            if (!db) {
+            if (!db)
+            {
                 const url = buildUrl(setting);
                 db = yield MongoClient.connect(url);
                 db.on("close", onDisconnected);
@@ -42,7 +44,8 @@ class MongoDriver extends Driver {
     {
         return co(function* ()
         {
-            if (db) {
+            if (db)
+            {
                 yield db.close();
             }
         });
@@ -50,15 +53,18 @@ class MongoDriver extends Driver {
 
     static setUp (args)
     {
-        if (args.hasOwnProperty('port')) {
+        if (args.hasOwnProperty('port'))
+        {
             setting.port = args.port;
         }
 
-        if (args.hasOwnProperty('host')) {
+        if (args.hasOwnProperty('host'))
+        {
             setting.host = args.host;
         }
 
-        if (args.hasOwnProperty('database')) {
+        if (args.hasOwnProperty('database'))
+        {
             setting.database = args.database;
         }
     }

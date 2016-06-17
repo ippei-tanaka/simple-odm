@@ -2,7 +2,6 @@ import co from 'co';
 import Path from './path';
 import SchemaData from './schema-data';
 import { SimpleOdmError } from './errors';
-import Immutable from 'immutable';
 
 /**
  * @param data {SchemaData}
@@ -58,8 +57,8 @@ export default class Schema {
         }
 
         const emptySchemaData = new SchemaData({
-            values: Immutable.Map(),
-            errorMessages: Immutable.Map()
+            values: {},
+            errorMessages: {}
         });
 
         onCreate = onCreate || defaultOnCreate;
