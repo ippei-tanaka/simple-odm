@@ -1,30 +1,30 @@
 import co from 'co';
 import { expect } from 'chai';
-import mongoDriver from '../../src/mongo-driver';
-import mongoUtils from '../../src/mongo-utils';
-import { bindOperator } from '../../src/mongo-crud-operator';
+import MongoDriver from '../../src/mongo-driver';
+import MongoUtils from '../../src/mongo-utils';
+import MongoCrudOperator from '../../src/mongo-crud-operator';
 
 const DB_NAME = "simple-odm";
 
 describe('mongo-crud-operator', function () {
 
-    before(() => mongoDriver.setUp({database: DB_NAME}));
-    beforeEach(mongoDriver.connect);
-    beforeEach(mongoUtils.dropDatabase);
-    beforeEach(mongoDriver.disconnect);
+    before(() => MongoDriver.setUp({database: DB_NAME}));
+    beforeEach(MongoDriver.connect);
+    beforeEach(() => MongoUtils.dropDatabase(MongoDriver));
+    beforeEach(MongoDriver.disconnect);
 
-    this.timeout(5000);
+    this.timeout(10000);
 
     it('should insert docs.', (done) => {
         co(function* () {
-            const oprator = bindOperator('users');
+            const operator = MongoCrudOperator.bindOperator(MongoDriver, 'persons');
 
-            const res1 = yield oprator.insertOne({
+            const res1 = yield operator.insertOne({
                 name: "M",
                 age: 34
             });
 
-            const res2 = yield oprator.insertOne({
+            const res2 = yield operator.insertOne({
                 name: "E",
                 age: 13
             });
@@ -40,27 +40,27 @@ describe('mongo-crud-operator', function () {
 
     it('should find docs.', (done) => {
         co(function* () {
-            const oprator = bindOperator('users');
+            const operator = MongoCrudOperator.bindOperator(MongoDriver, 'persons');
 
-            const res1 = yield oprator.insertOne({
+            const res1 = yield operator.insertOne({
                 name: "M",
                 age: 34
             });
 
-            const res2 = yield oprator.insertOne({
+            const res2 = yield operator.insertOne({
                 name: "E",
                 age: 13
             });
 
-            const user1 = yield oprator.findOne({
+            const user1 = yield operator.findOne({
                 _id: res1.insertedId
             });
 
-            const user2 = yield oprator.findOne({
+            const user2 = yield operator.findOne({
                 _id: res2.insertedId
             });
 
-            const users = yield oprator.findMany();
+            const users = yield operator.findMany();
 
             expect(user1.age).to.equal(34);
             expect(user2.age).to.equal(13);
