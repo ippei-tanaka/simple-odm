@@ -112,6 +112,11 @@ class Model {
         })
     }
 
+    getInitialValues ()
+    {
+        return this._state.dataList.first().toJS();
+    }
+
     getValues ()
     {
         return this._state.dataList.last().toJS();
