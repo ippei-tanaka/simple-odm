@@ -4,10 +4,9 @@
   "description": "a simple object document mapper",
   "main": "lib/index.js",
   "scripts": {
-    "build": "npm run build:clean && npm run build:src && npm run build:test",
+    "build": "npm run build:clean && npm run build:src",
     "build:clean": "./node_modules/.bin/rimraf lib",
     "build:src": " ./node_modules/.bin/babel src --out-dir lib",
-    "build:test": " ./node_modules/.bin/babel test --out-dir lib-test",
     "test": "./node_modules/.bin/mocha $(find test -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
     "test:unit": "./node_modules/.bin/mocha $(find test/unit -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
     "test:integration": "./node_modules/.bin/mocha $(find test/integration -name '*.test.js') --compilers js:babel-register --require babel-polyfill"

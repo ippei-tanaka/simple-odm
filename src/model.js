@@ -67,7 +67,7 @@ class Model {
 
         return co(function* ()
         {
-            return schema.emit(Schema.ON_SAVE, model);
+            return schema.emit(Schema.SAVE, model);
         })
     }
 

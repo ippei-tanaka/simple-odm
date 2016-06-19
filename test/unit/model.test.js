@@ -117,7 +117,7 @@ describe('model', function ()
                     }
                 });
 
-                schema.on(Schema.ON_SAVE, data => Promise.resolve(data));
+                schema.on(Schema.SAVE, data => Promise.resolve(data));
 
                 const operator = {
                     insertOne: (v) => Promise.resolve("Would save the model to the DB!")
@@ -164,7 +164,7 @@ describe('model', function ()
                     }
                 });
 
-                schema.on(Schema.ON_SAVE, (model) => co(function* ()
+                schema.on(Schema.SAVE, (model) => co(function* ()
                 {
                     model.setErrors({
                         fake_email: ["Oh, no!", "You added something new!"]
