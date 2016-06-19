@@ -3,7 +3,7 @@ import EventEmitter from 'events';
 import Path from './path';
 import { SimpleOdmError } from './errors';
 
-const ON_SAVE_EVENT = Symbol();
+const SAVE_EVENT = Symbol();
 
 /**
  * @param data {object}
@@ -82,9 +82,9 @@ export default class Schema {
         return this._paths;
     }
 
-    static get ON_SAVE ()
+    static get SAVE ()
     {
-        return ON_SAVE_EVENT;
+        return SAVE_EVENT;
     }
 
     get on ()
