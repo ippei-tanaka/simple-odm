@@ -8,11 +8,10 @@ import pathFunctions from './path-functions';
 class Model {
 
     /**
-     * @param operator {CrudOperator}
      * @param schema {Schema}
      * @param values {object}
      */
-    constructor ({operator, schema}, values = {})
+    constructor (schema, values = {})
     {
         if (typeof values !== 'object' || values === null)
         {
@@ -20,7 +19,6 @@ class Model {
         }
 
         this._schema = schema;
-        this._operator = operator;
 
         this._state = {
             dataList: Immutable.fromJS([values]),
@@ -28,47 +26,6 @@ class Model {
         };
 
         Object.freeze(this);
-    }
-
-    static findMany ({operator, schema}, {query = {}, sort = {}, limit = 0, skip = 0} = {})
-    {
-        const ThisModel = this;
-
-        return co(function* ()
-        {
-            const docs = yield operator.findMany(query, sort, limit, skip);
-            return docs.map(doc => new ThisModel(doc));
-        });
-    }
-
-    static findOne ({operator, schema}, query)
-    {
-        const ThisModel = this;
-
-        return co(function* ()
-        {
-            const doc = yield operator.findOne(query);
-            return doc ? new ThisModel(doc) : null;
-        });
-    }
-
-    static aggregate ({operator, schema}, query)
-    {
-        return co(function* ()
-        {
-            return yield operator.aggregate(query);
-        });
-    }
-
-    executeOnSaveHook ()
-    {
-        const schema = this._schema;
-        const model = this;
-
-        return co(function* ()
-        {
-            return schema.emit(Schema.SAVE, model);
-        })
     }
 
     inspectErrors ()
@@ -91,7 +48,8 @@ class Model {
         });
     }
 
-    getProcessedValues () {
+    getRefinedValues ()
+    {
         const schema = this._schema;
         const values = this.getValues();
 
@@ -103,9 +61,11 @@ class Model {
             {
                 const value = values[path.name];
 
-                try {
-                    obj[path.name] = yield pathFunctions.getProcessedValue({path, value});
-                } catch (e) {}
+                try
+                {
+                    obj[path.name] = yield pathFunctions.getRefinedValue({path, value});
+                } catch (e)
+                {}
             }
 
             return obj;
@@ -127,6 +87,12 @@ class Model {
         this._state.dataList = this._state.dataList.push(Immutable.fromJS(values));
     }
 
+    addValues (values)
+    {
+        const newValues = this._state.dataList.last().merge(Immutable.fromJS(values));
+        this._state.dataList = this._state.dataList.push(newValues);
+    }
+
     getErrors ()
     {
         return this._state.errorList.last().toJS();
@@ -137,25 +103,29 @@ class Model {
         this._state.errorList = this._state.errorList.push(Immutable.fromJS(errors));
     }
 
+    addErrors (errors)
+    {
+        const newErrors = this._state.errorList.last().merge(Immutable.fromJS(errors));
+        this._state.errorList = this._state.errorList.push(newErrors);
+    }
+
     get isUpdated ()
     {
         return this._state.dataList.size > 1;
     }
 
-    save ()
+    inspect ()
     {
         return co(function* ()
         {
             this.setErrors(yield this.inspectErrors());
 
-            yield this.executeOnSaveHook();
+            yield this._schema.emit(Schema.INSPECTED, this);
 
             if (this._state.errorList.last().filter((v) => v.size > 0).size > 0)
             {
                 throw this.getErrors();
             }
-
-            return yield this._operator.insertOne(this.getProcessedValues());
 
         }.bind(this));
     }

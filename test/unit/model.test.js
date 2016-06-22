@@ -7,202 +7,173 @@ import ModelBuilder from '../../src/model-builder';
 
 describe('model', function ()
 {
-    describe('findMany()', function ()
+    it('should throw an error if values have invalid data.', (done) =>
     {
-        it('should return a list of models.', (done) =>
+        co(function* ()
         {
-            co(function* ()
-            {
-                const schema = new Schema({
-                    name: 'user',
-                    paths: {
-                        email: {
-                            required: true
-                        }
-                    }
-                });
-
-                const operator = {
-                    findMany: () => Promise.resolve([
-                        {email: "aaa"},
-                        {email: "bbb"},
-                        {email: "ccc"}
-                    ])
-                };
-
-                const User = ModelBuilder.build({operator, schema});
-
-                const models = yield User.findMany();
-
-                /*
-                expect(models[0]).to.be.an('undefined');
-                expect(error.fake_email[0]).to.equal("Oh, no!");
-                expect(error.fake_email[1]).to.equal("You added something new!");
-                */
-
-                done();
-            }).catch((e) =>
-            {
-                done(e);
-            });
-        });
-    });
-
-    describe('save()', function ()
-    {
-        it('should throw an error if values have invalid data.', (done) =>
-        {
-            co(function* ()
-            {
-                const schema = new Schema({
-                    name: 'user',
-                    paths: {
-                        email: {
-                            type: Types.String,
-                            required: true,
-                            validate: function* (v)
+            const schema = new Schema({
+                name: 'user',
+                paths: {
+                    email: {
+                        type: Types.String,
+                        required: true,
+                        validate: function* (v)
+                        {
+                            if (!validator.isEmail(v))
                             {
-                                if (!validator.isEmail(v))
-                                {
-                                    yield `"${v}" is not a valid email.`;
-                                }
+                                yield `"${v}" is not a valid email.`;
                             }
                         }
                     }
-                });
-
-                const operator = {
-                    insertOne: (v) => Promise.resolve(null)
-                };
-
-                const User = ModelBuilder.build({operator, schema});
-
-                const model = new User({
-                    email: "test"
-                });
-
-                let error;
-                let response;
-
-                try
-                {
-                    response = yield model.save();
-                } catch (e)
-                {
-                    error = e || null;
                 }
-
-                expect(response).to.be.an('undefined');
-                expect(error.email[0]).to.equal('"test" is not a valid email.');
-
-                done();
-
-            }).catch((e) =>
-            {
-                done(e);
             });
-        });
 
-        it('should create a model.', (done) =>
-        {
-            co(function* ()
+            const User = ModelBuilder.build(schema);
+
+            const model = new User({
+                email: "test"
+            });
+
+            let error;
+
+            try
             {
-                const schema = new Schema({
-                    name: 'user',
-                    paths: {
-                        email: {
-                            type: Types.String,
-                            required: true
-                        }
+                yield model.inspect();
+            } catch (e)
+            {
+                error = e || null;
+            }
+
+            expect(error.email[0]).to.equal('"test" is not a valid email.');
+
+            done();
+
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
+
+    it('should let REFINE hook modify the model values.', (done) =>
+    {
+        co(function* ()
+        {
+            const schema = new Schema({
+                name: 'user',
+                paths: {
+                    email: {
+                        type: Types.String,
+                        required: true
                     }
-                });
-
-                schema.on(Schema.SAVE, data => Promise.resolve(data));
-
-                const operator = {
-                    insertOne: (v) => Promise.resolve("Would save the model to the DB!")
-                };
-
-                const User = ModelBuilder.build({operator, schema});
-
-                const model = new User({
-                    email: "test"
-                });
-
-                let error;
-                let response;
-
-                try
-                {
-                    response = yield model.save();
-                } catch (e)
-                {
-                    error = e || null;
                 }
-
-                expect(error).to.be.an('undefined');
-                expect(response).to.equal("Would save the model to the DB!");
-
-                done();
-
-            }).catch((e) =>
-            {
-                done(e);
             });
-        });
 
-        it('should let ON_SAVE hook modify the error messages.', (done) =>
-        {
-            co(function* ()
-            {
-                const schema = new Schema({
-                    name: 'user',
-                    paths: {
-                        email: {
-                            required: true
-                        }
-                    }
+            schema.on(Schema.INSPECTED, model => {
+                model.addValues({
+                    email: model.getValues().email + "?",
+                    age: 20
                 });
+            });
 
-                schema.on(Schema.SAVE, (model) => co(function* ()
-                {
-                    model.setErrors({
-                        fake_email: ["Oh, no!", "You added something new!"]
-                    });
+            const User = ModelBuilder.build(schema);
+
+            const model = new User({
+                email: "test"
+            });
+
+            let error;
+
+            try
+            {
+                yield model.inspect();
+            } catch (e)
+            {
+                error = e || null;
+            }
+
+            expect(error).to.be.an('undefined');
+            expect(model.getValues().email).to.equal("test?");
+            expect(model.getValues().age).to.equal(20);
+
+            done();
+
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
+
+    it('should let REFINE hook modify the error messages.', (done) =>
+    {
+        co(function* ()
+        {
+            const schema = new Schema({
+                name: 'user',
+                paths: {
+                    email: {
+                        required: true
+                    }
+                }
+            });
+
+            schema.on(Schema.INSPECTED, (model) =>
+            {
+                model.setErrors(Object.assign({}, model.getErrors(), {
+                    fake_password: ["Boo!"]
                 }));
-
-                const operator = {
-                    insertOne: (v) => Promise.resolve("Would save the model to the DB!")
-                };
-
-                const User = ModelBuilder.build({operator, schema});
-
-                const model = new User({
-                    email: "test"
-                });
-
-                let error;
-                let response;
-
-                try
-                {
-                    response = yield model.save();
-                } catch (e)
-                {
-                    error = e || null;
-                }
-
-                expect(response).to.be.an('undefined');
-                expect(error.fake_email[0]).to.equal("Oh, no!");
-                expect(error.fake_email[1]).to.equal("You added something new!");
-
-                done();
-            }).catch((e) =>
-            {
-                done(e);
             });
-        });
 
+            schema.on(Schema.INSPECTED, (model) => new Promise((resolve) =>
+            {
+                setTimeout(() =>
+                {
+                    model.setErrors(Object.assign({}, model.getErrors(), {
+                        fake_email: ["Oh, no!", "You added something new!"]
+                    }));
+                    resolve();
+                }, 100);
+            }));
+
+            schema.on(Schema.INSPECTED, (model) => co(function* ()
+            {
+                yield new Promise((resolve) =>
+                {
+                    setTimeout(() =>
+                    {
+                        model.addErrors({
+                            fake_age: ["Ho ho!"]
+                        });
+                        resolve();
+                    }, 100);
+                });
+            }));
+
+            const User = ModelBuilder.build(schema);
+
+            const model = new User({
+                email: "test"
+            });
+
+            let error;
+
+            try
+            {
+                yield model.inspect();
+            } catch (e)
+            {
+                error = e || null;
+            }
+
+            expect(error.fake_email[0]).to.equal("Oh, no!");
+            expect(error.fake_email[1]).to.equal("You added something new!");
+            expect(error.fake_password[0]).to.equal("Boo!");
+            expect(error.fake_age[0]).to.equal("Ho ho!");
+
+            done();
+        }).catch((e) =>
+        {
+            done(e);
+        });
     });
 
 });

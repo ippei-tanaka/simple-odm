@@ -3,7 +3,7 @@ import EventEmitter from 'events';
 import Path from './path';
 import { SimpleOdmError } from './errors';
 
-const SAVE_EVENT = Symbol();
+const INSPECTED_EVENT = Symbol();
 
 /**
  * @param data {object}
@@ -23,7 +23,7 @@ const defaultOnUpdate = data => co(function* ()
     return data;
 });
 
-export default class Schema {
+class Schema {
 
     /**
      * @param name {string}
@@ -82,9 +82,9 @@ export default class Schema {
         return this._paths;
     }
 
-    static get SAVE ()
+    static get INSPECTED ()
     {
-        return SAVE_EVENT;
+        return INSPECTED_EVENT;
     }
 
     get on ()
@@ -92,9 +92,25 @@ export default class Schema {
         return this._emitter.on.bind(this._emitter);
     }
 
-    get emit ()
+    emit (eventName, ...args)
     {
-        return this._emitter.emit.bind(this._emitter);
+        const listeners = this._emitter.listeners(eventName);
+        let ret;
+
+        return co(function* ()
+        {
+            for (const listener of listeners)
+            {
+                ret = listener.call(null, ...args);
+
+                if (ret instanceof Promise)
+                {
+                    yield ret;
+                }
+            }
+        });
     }
 
 }
+
+export default Object.freeze(Schema);
