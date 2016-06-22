@@ -4,6 +4,18 @@ import Immutable from 'immutable';
 import Schema from './schema';
 import pathFunctions from './path-functions';
 
+const inspectErrors = ({schema, updated, values}) => co(function* ()
+{
+    let errorMessages = {};
+
+    for (let path of schema)
+    {
+        const value = values[path.name];
+        errorMessages[path.name] = yield pathFunctions.inspectErrors({path, value, updated});
+    }
+
+    return errorMessages;
+});
 
 class Model {
 
@@ -26,26 +38,6 @@ class Model {
         };
 
         Object.freeze(this);
-    }
-
-    inspectErrors ()
-    {
-        const schema = this._schema;
-        const updated = this.isUpdated;
-        const values = this.getValues();
-
-        return co(function* ()
-        {
-            let errorMessages = {};
-
-            for (let path of schema)
-            {
-                const value = values[path.name];
-                errorMessages[path.name] = yield pathFunctions.inspectErrors({path, value, updated});
-            }
-
-            return errorMessages;
-        });
     }
 
     getRefinedValues ()
@@ -118,7 +110,11 @@ class Model {
     {
         return co(function* ()
         {
-            this.setErrors(yield this.inspectErrors());
+            this.setErrors(yield inspectErrors({
+                schema: this._schema,
+                updated: this.isUpdated,
+                values: this.getValues()
+            }));
 
             yield this._schema.emit(Schema.INSPECTED, this);
 
