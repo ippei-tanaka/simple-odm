@@ -106,6 +106,10 @@ class Model {
         return this._state.dataList.size > 1;
     }
 
+    get hasErrors () {
+        return this._state.errorList.last().filter((v) => v.size > 0).size > 0;
+    }
+
     inspect ()
     {
         return co(function* ()
@@ -118,9 +122,9 @@ class Model {
 
             yield this._schema.emit(Schema.INSPECTED, this);
 
-            if (this._state.errorList.last().filter((v) => v.size > 0).size > 0)
+            if (this.hasErrors)
             {
-                throw this.getErrors();
+                return this.getErrors();
             }
 
         }.bind(this));
