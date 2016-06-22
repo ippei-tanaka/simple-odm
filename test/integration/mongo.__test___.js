@@ -14,7 +14,7 @@ describe('mongo', function () {
 
     this.timeout(10000);
 
-    it('should create a unique index.', (done) => {
+    it('should create a unique index when the model with the schema that has the unique flagged path is saved.', (done) => {
         co(function* () {
             const res1 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
             const res2 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
