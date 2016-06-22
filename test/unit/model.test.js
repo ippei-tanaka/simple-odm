@@ -30,7 +30,7 @@ describe('model', function ()
                     ])
                 };
 
-                const User = ModelBuilder.buildModel({operator, schema});
+                const User = ModelBuilder.build({operator, schema});
 
                 const models = yield User.findMany();
 
@@ -75,7 +75,7 @@ describe('model', function ()
                     insertOne: (v) => Promise.resolve(null)
                 };
 
-                const User = ModelBuilder.buildModel({operator, schema});
+                const User = ModelBuilder.build({operator, schema});
 
                 const model = new User({
                     email: "test"
@@ -123,7 +123,7 @@ describe('model', function ()
                     insertOne: (v) => Promise.resolve("Would save the model to the DB!")
                 };
 
-                const User = ModelBuilder.buildModel({operator, schema});
+                const User = ModelBuilder.build({operator, schema});
 
                 const model = new User({
                     email: "test"
@@ -175,7 +175,7 @@ describe('model', function ()
                     insertOne: (v) => Promise.resolve("Would save the model to the DB!")
                 };
 
-                const User = ModelBuilder.buildModel({operator, schema});
+                const User = ModelBuilder.build({operator, schema});
 
                 const model = new User({
                     email: "test"

@@ -3,7 +3,7 @@ import Model from './model';
 
 class ModelBuilder {
 
-    static buildModel ({operator, schema})
+    static build ({operator, schema})
     {
         const firstArg = {operator, schema};
         const BindModel = Model.bind(Model, firstArg);
@@ -21,6 +21,4 @@ class ModelBuilder {
 
 }
 
-Object.freeze(ModelBuilder);
-
-export default ModelBuilder;
+export default Object.freeze(ModelBuilder);
