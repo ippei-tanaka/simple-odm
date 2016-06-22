@@ -2,11 +2,11 @@ import co from 'co';
 import { expect } from 'chai';
 import MongoDriver from '../../src/mongo-driver';
 import MongoUtils from '../../src/mongo-utils';
-import MongoCrudOperator from '../../src/mongo-crud-operator';
+import MongoCrudOperatorBuilder from '../../src/mongo-crud-operator-builder';
 
 const DB_NAME = "simple-odm";
 
-describe('mongo-crud-operator', function ()
+describe('mongo-crud-operator-builder', function ()
 {
 
     before(() => MongoDriver.setUp({database: DB_NAME}));
@@ -20,17 +20,15 @@ describe('mongo-crud-operator', function ()
     {
         co(function* ()
         {
-            const res1 = yield MongoCrudOperator.insertOne(
-                MongoDriver,
-                'persons',
+            const operator = MongoCrudOperatorBuilder.build(MongoDriver, 'persons');
+
+            const res1 = yield operator.insertOne(
                 {
                     name: "M",
                     age: 34
                 });
 
-            const res2 = yield MongoCrudOperator.insertOne(
-                MongoDriver,
-                'persons',
+            const res2 = yield operator.insertOne(
                 {
                     name: "E",
                     age: 13
@@ -50,37 +48,31 @@ describe('mongo-crud-operator', function ()
     {
         co(function* ()
         {
-            const res1 = yield MongoCrudOperator.insertOne(
-                MongoDriver,
-                'persons',
+            const operator = MongoCrudOperatorBuilder.build(MongoDriver, 'persons');
+
+            const res1 = yield operator.insertOne(
                 {
                     name: "M",
                     age: 34
                 });
 
-            const res2 = yield MongoCrudOperator.insertOne(
-                MongoDriver,
-                'persons',
+            const res2 = yield operator.insertOne(
                 {
                     name: "E",
                     age: 13
                 });
 
-            const user1 = yield MongoCrudOperator.findOne(
-                MongoDriver,
-                'persons',
+            const user1 = yield operator.findOne(
                 {
                     _id: res1.insertedId
                 });
 
-            const user2 = yield MongoCrudOperator.findOne(
-                MongoDriver,
-                'persons',
+            const user2 = yield operator.findOne(
                 {
                     _id: res2.insertedId
                 });
 
-            const users = yield MongoCrudOperator.findMany(MongoDriver, 'persons');
+            const users = yield operator.findMany();
 
             expect(user1.age).to.equal(34);
             expect(user2.age).to.equal(13);

@@ -162,6 +162,4 @@ class Model {
 
 }
 
-Object.freeze(Model);
-
-export default Model;
+export default Object.freeze(Model);
