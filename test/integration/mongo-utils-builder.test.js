@@ -6,7 +6,7 @@ import MongoUtilsBuilder from '../../src/mongo-utils-builder';
 
 const DB_NAME = "simple-odm";
 
-describe('mongo-utils', function () {
+describe('mongo-utils-builder', function () {
 
     before(() => MongoDriver.setUp({database: DB_NAME}));
     beforeEach(MongoDriver.connect);
@@ -17,11 +17,12 @@ describe('mongo-utils', function () {
 
     it('should create a unique index.', (done) => {
         co(function* () {
-            const res1 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
-            const res2 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
-            const info = yield MongoUtils.getIndexInfo(MongoDriver, 'users', 'email');
-            expect(res1).to.equal('email_1');
-            expect(res2).to.equal('email_1');
+            const utils = MongoUtilsBuilder.build(MongoDriver);
+            const res1 = yield utils.createUniqueIndex('users', 'password');
+            const res2 = yield utils.createUniqueIndex('users', 'password');
+            const info = yield utils.getIndexInfo('users', 'password');
+            expect(res1).to.equal('password_1');
+            expect(res2).to.equal('password_1');
             expect(info).to.not.equal(null);
             done();
         }).catch((e) => {

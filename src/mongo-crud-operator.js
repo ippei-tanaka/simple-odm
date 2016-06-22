@@ -12,21 +12,6 @@ const connectToCollection = function (driver, collectionName)
 
 class MongoCrudOperator extends CrudOperator {
 
-    static bindDependencies (driver, collectionName)
-    {
-        const obj = {};
-
-        for (let key of Object.getOwnPropertyNames(this))
-        {
-            if (typeof this[key] === "function" && key !== "bindDependencies")
-            {
-                obj[key] = this[key].bind(this, driver, collectionName);
-            }
-        }
-
-        return obj;
-    }
-
     static findMany (
         driver,
         collectionName,
@@ -116,6 +101,4 @@ class MongoCrudOperator extends CrudOperator {
     }
 }
 
-Object.freeze(MongoCrudOperator);
-
-export default MongoCrudOperator;
+export default Object.freeze(MongoCrudOperator);

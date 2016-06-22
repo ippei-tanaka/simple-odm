@@ -12,7 +12,7 @@ class ModelBuilder {
         {
             if (typeof Model[key] === "function")
             {
-                BindModel[key] = Model[key].bind(BindModel, firstArg);
+                BindModel[key] = Model[key].bind(Model, firstArg);
             }
         }
 

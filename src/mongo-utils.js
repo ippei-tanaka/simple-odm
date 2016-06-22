@@ -27,7 +27,7 @@ class MongoUtils extends DbUtils {
         });
     }
 
-    static  dropIndex (driver, collectionName, pathName)
+    static dropIndex (driver, collectionName, pathName)
     {
         return co(function* ()
         {
@@ -47,6 +47,4 @@ class MongoUtils extends DbUtils {
 
 }
 
-Object.freeze(MongoUtils);
-
-export default MongoUtils;
+export default Object.freeze(MongoUtils);
