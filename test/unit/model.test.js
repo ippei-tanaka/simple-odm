@@ -34,15 +34,7 @@ describe('model', function ()
                 email: "test"
             });
 
-            let error;
-
-            try
-            {
-                yield model.inspect();
-            } catch (e)
-            {
-                error = e || null;
-            }
+            const error = yield model.inspect();
 
             expect(error.email[0]).to.equal('"test" is not a valid email.');
 
@@ -81,15 +73,7 @@ describe('model', function ()
                 email: "test"
             });
 
-            let error;
-
-            try
-            {
-                yield model.inspect();
-            } catch (e)
-            {
-                error = e || null;
-            }
+            const error = yield model.inspect();
 
             expect(error).to.be.an('undefined');
             expect(model.getValues().email).to.equal("test?");
@@ -154,15 +138,7 @@ describe('model', function ()
                 email: "test"
             });
 
-            let error;
-
-            try
-            {
-                yield model.inspect();
-            } catch (e)
-            {
-                error = e || null;
-            }
+            const error = yield model.inspect();
 
             expect(error.fake_email[0]).to.equal("Oh, no!");
             expect(error.fake_email[1]).to.equal("You added something new!");
