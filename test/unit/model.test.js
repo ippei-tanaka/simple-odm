@@ -60,7 +60,8 @@ describe('model', function ()
                 }
             });
 
-            schema.on(Schema.INSPECTED, model => {
+            schema.onInspected(model =>
+            {
                 model.addValues({
                     email: model.getValues().email + "?",
                     age: 20
@@ -100,14 +101,14 @@ describe('model', function ()
                 }
             });
 
-            schema.on(Schema.INSPECTED, (model) =>
+            schema.onInspected(model =>
             {
                 model.setErrors(Object.assign({}, model.getErrors(), {
                     fake_password: ["Boo!"]
                 }));
             });
 
-            schema.on(Schema.INSPECTED, (model) => new Promise((resolve) =>
+            schema.onInspected(model => new Promise((resolve) =>
             {
                 setTimeout(() =>
                 {
@@ -118,7 +119,7 @@ describe('model', function ()
                 }, 100);
             }));
 
-            schema.on(Schema.INSPECTED, (model) => co(function* ()
+            schema.onInspected(model => co(function* ()
             {
                 yield new Promise((resolve) =>
                 {

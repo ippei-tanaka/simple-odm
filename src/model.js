@@ -3,6 +3,7 @@ import { SimpleOdmError } from './errors';
 import Immutable from 'immutable';
 import Schema from './schema';
 import pathFunctions from './path-functions';
+import EventHub from './event-hub';
 
 const inspectErrors = ({schema, updated, values}) => co(function* ()
 {
@@ -120,7 +121,7 @@ class Model {
                 values: this.getValues()
             }));
 
-            yield this._schema.emit(Schema.INSPECTED, this);
+            yield EventHub.emit(this._schema.INSPECTED, this);
 
             if (this.hasErrors)
             {

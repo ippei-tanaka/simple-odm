@@ -1,27 +1,6 @@
-import co from 'co';
-import EventEmitter from 'events';
 import Path from './path';
 import { SimpleOdmError } from './errors';
-
-const INSPECTED_EVENT = Symbol();
-
-/**
- * @param data {object}
- * @returns {Promise.<object>}
- */
-const defaultOnCreate = data => co(function* ()
-{
-    return data;
-});
-
-/**
- * @param data {object}
- * @returns {Promise.<object>}
- */
-const defaultOnUpdate = data => co(function* ()
-{
-    return data;
-});
+import EventHub from './event-hub';
 
 class Schema {
 
@@ -52,7 +31,7 @@ class Schema {
             this._paths[pathName] = new Path(pathName, paths[pathName]);
         }
 
-        this._emitter = new EventEmitter();
+        this._INSPECTED_EVENT = Symbol();
 
         Object.freeze(this._paths);
         Object.freeze(this);
@@ -82,35 +61,14 @@ class Schema {
         return this._paths;
     }
 
-    static get INSPECTED ()
+    get INSPECTED ()
     {
-        return INSPECTED_EVENT;
+        return this._INSPECTED_EVENT;
     }
 
-    get on ()
-    {
-        return this._emitter.on.bind(this._emitter);
+    onInspected (callback) {
+        EventHub.on(this.INSPECTED, callback);
     }
-
-    emit (eventName, ...args)
-    {
-        const listeners = this._emitter.listeners(eventName);
-        let ret;
-
-        return co(function* ()
-        {
-            for (const listener of listeners)
-            {
-                ret = listener.call(null, ...args);
-
-                if (ret instanceof Promise)
-                {
-                    yield ret;
-                }
-            }
-        });
-    }
-
 }
 
 export default Object.freeze(Schema);
