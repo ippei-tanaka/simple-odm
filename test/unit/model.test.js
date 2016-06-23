@@ -53,7 +53,7 @@ describe('model', function ()
         });
     });
 
-    it('should let REFINE hook modify the model values.', (done) =>
+    it('should let BEFORE_SAVE hook modify the model values.', (done) =>
     {
         co(function* ()
         {
@@ -101,7 +101,7 @@ describe('model', function ()
         });
     });
 
-    it('should let REFINE hook modify the error messages.', (done) =>
+    it('should let BEFORE_SAVE hook modify the error messages.', (done) =>
     {
         co(function* ()
         {
@@ -166,6 +166,43 @@ describe('model', function ()
             expect(error.fake_age[0]).to.equal("Ho ho!");
 
             done();
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
+
+    it('should not let users manually modify the model errors before they were modified by the model.', (done) =>
+    {
+        co(function* ()
+        {
+            const schema = new Schema({
+                name: 'user',
+                paths: {
+                    email: {}
+                }
+            });
+
+            const User = ModelBuilder.build(schema);
+
+            const model = new User({
+                email: "test"
+            });
+
+            let error;
+
+            try {
+                yield model.setErrors({
+                    email: "Oh!"
+                });
+            } catch (e) {
+                error = e;
+            }
+
+            expect(error.message).to.equal("Errors of a model can't be modified manually before inspected.");
+
+            done();
+
         }).catch((e) =>
         {
             done(e);
