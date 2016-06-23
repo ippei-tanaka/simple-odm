@@ -9,7 +9,7 @@ import ModelBuilder from '../../src/model-builder';
 
 const DB_NAME = "simple-odm";
 
-describe('mongo', function () {
+describe('mongo-model', function () {
 
     before(() => MongoDriver.setUp({database: DB_NAME}));
     beforeEach(MongoDriver.connect);

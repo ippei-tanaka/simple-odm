@@ -60,6 +60,15 @@ class Schema {
         return this._paths;
     }
 
+    get primaryPath ()
+    {
+        return this._paths[this.primaryPathName];
+    }
+
+    get primaryPathName () {
+        throw new SimpleOdmError("Implement primaryPathName");
+    }
+
     get BEFORE_SAVED ()
     {
         return this._BEFORE_SAVED;
