@@ -100,7 +100,7 @@ class Model {
         return !this._errors.isEmpty;
     }
 
-    inspect ()
+    save ()
     {
         return co(function* ()
         {
@@ -110,11 +110,11 @@ class Model {
                 values: this.getValues()
             }));
 
-            yield EventHub.emit(this._schema.INSPECTED, this);
+            yield EventHub.emit(this._schema.BEFORE_SAVED, this);
 
             if (this.hasErrors)
             {
-                return this.getErrors();
+                throw this.getErrors();
             }
 
         }.bind(this));
