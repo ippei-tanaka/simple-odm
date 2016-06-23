@@ -9,21 +9,18 @@ const isObject = a => typeof a === 'object' && a !== null;
 class Store {
 
     /**
-     * @param data {object}
+     * @param initialData {object}
      */
-    constructor (data)
+    constructor (initialData = {})
     {
         stores.set(this, Immutable.List());
 
         Object.freeze(this);
 
-        if (data !== undefined)
-        {
-            this.set(data);
-        }
+        this.set(initialData);
     }
 
-    getFirst ()
+    getInitialData ()
     {
         return stores.get(this).first().toJS();
     }
@@ -37,6 +34,7 @@ class Store {
     {
         if (!isObject(data))
         {
+            this.destroy();
             throw new SimpleOdmError("The argument has to be an object");
         }
 
@@ -48,6 +46,7 @@ class Store {
     {
         if (!isObject(data))
         {
+            this.destroy();
             throw new SimpleOdmError("The argument has to be an object");
         }
 

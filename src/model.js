@@ -4,6 +4,7 @@ import Schema from './schema';
 import pathFunctions from './path-functions';
 import Store from './store';
 import EventHub from './event-hub';
+import pluralize from 'pluralize';
 
 const inspectErrors = ({schema, updated, values}) => co(function* ()
 {
@@ -29,6 +30,7 @@ class Model {
         this._schema = schema;
         this._values = new Store(values);
         this._errors = new Store();
+        //this._collectionName = pluralize(schema.name);
         Object.freeze(this);
     }
 
@@ -58,7 +60,7 @@ class Model {
 
     getInitialValues ()
     {
-        return this._values.getFirst();
+        return this._values.getInitialData();
     }
 
     getValues ()
@@ -83,11 +85,21 @@ class Model {
 
     setErrors (errors)
     {
+        if (!this._errors.isUpdated)
+        {
+            throw new SimpleOdmError("Errors of a model can't be modified manually before inspected.");
+        }
+
         return this._errors.set(errors);
     }
 
     addErrors (errors)
     {
+        if (!this._errors.isUpdated)
+        {
+            throw new SimpleOdmError("Errors of a model can't be modified manually before inspected.");
+        }
+
         this._errors.add(errors);
     }
 
@@ -96,7 +108,8 @@ class Model {
         return this._values.isUpdated;
     }
 
-    get hasErrors () {
+    get hasErrors ()
+    {
         return !this._errors.isEmpty;
     }
 
@@ -104,7 +117,7 @@ class Model {
     {
         return co(function* ()
         {
-            this.setErrors(yield inspectErrors({
+            this._errors.set(yield inspectErrors({
                 schema: this._schema,
                 updated: this.isUpdated,
                 values: this.getValues()
@@ -116,6 +129,8 @@ class Model {
             {
                 throw this.getErrors();
             }
+
+
 
         }.bind(this));
     }
