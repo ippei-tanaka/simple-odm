@@ -1,6 +1,5 @@
 import Path from './path';
 import { SimpleOdmError } from './errors';
-import EventHub from './event-hub';
 
 class Schema {
 
@@ -31,7 +30,7 @@ class Schema {
             this._paths[pathName] = new Path(pathName, paths[pathName]);
         }
 
-        this._INSPECTED_EVENT = Symbol();
+        this._BEFORE_SAVED = Symbol();
 
         Object.freeze(this._paths);
         Object.freeze(this);
@@ -61,13 +60,9 @@ class Schema {
         return this._paths;
     }
 
-    get INSPECTED ()
+    get BEFORE_SAVED ()
     {
-        return this._INSPECTED_EVENT;
-    }
-
-    onInspected (callback) {
-        EventHub.on(this.INSPECTED, callback);
+        return this._BEFORE_SAVED;
     }
 }
 

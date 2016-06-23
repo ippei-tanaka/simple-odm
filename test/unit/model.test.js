@@ -4,6 +4,7 @@ import validator from 'validator';
 import { Types } from '../../src/type';
 import Schema from '../../src/schema';
 import ModelBuilder from '../../src/model-builder';
+import EventHub from '../../src/event-hub';
 
 describe('model', function ()
 {
@@ -34,7 +35,13 @@ describe('model', function ()
                 email: "test"
             });
 
-            const error = yield model.inspect();
+            let error;
+
+            try {
+                yield model.save();
+            } catch (e) {
+                error = e;
+            }
 
             expect(error.email[0]).to.equal('"test" is not a valid email.');
 
@@ -60,7 +67,7 @@ describe('model', function ()
                 }
             });
 
-            schema.onInspected(model =>
+            EventHub.on(schema.BEFORE_SAVED, model =>
             {
                 model.addValues({
                     email: model.getValues().email + "?",
@@ -74,7 +81,13 @@ describe('model', function ()
                 email: "test"
             });
 
-            const error = yield model.inspect();
+            let error;
+
+            try {
+                yield model.save();
+            } catch (e) {
+                error = e;
+            }
 
             expect(error).to.be.an('undefined');
             expect(model.getValues().email).to.equal("test?");
@@ -101,14 +114,14 @@ describe('model', function ()
                 }
             });
 
-            schema.onInspected(model =>
+            EventHub.on(schema.BEFORE_SAVED, model =>
             {
                 model.setErrors(Object.assign({}, model.getErrors(), {
                     fake_password: ["Boo!"]
                 }));
             });
 
-            schema.onInspected(model => new Promise((resolve) =>
+            EventHub.on(schema.BEFORE_SAVED, model => new Promise((resolve) =>
             {
                 setTimeout(() =>
                 {
@@ -119,7 +132,7 @@ describe('model', function ()
                 }, 100);
             }));
 
-            schema.onInspected(model => co(function* ()
+            EventHub.on(schema.BEFORE_SAVED, model => co(function* ()
             {
                 yield new Promise((resolve) =>
                 {
@@ -139,7 +152,13 @@ describe('model', function ()
                 email: "test"
             });
 
-            const error = yield model.inspect();
+            let error;
+
+            try {
+                yield model.save();
+            } catch (e) {
+                error = e;
+            }
 
             expect(error.fake_email[0]).to.equal("Oh, no!");
             expect(error.fake_email[1]).to.equal("You added something new!");
