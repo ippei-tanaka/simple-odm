@@ -37,7 +37,6 @@ describe('mongo', function () {
             });
 
             const operator = MongoCrudOperatorBuilder.build(MongoDriver, 'users');
-            const operator = MongoCrudOperatorBuilder.build(MongoDriver, 'users');
             const res1 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
             const res2 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
             const info = yield MongoUtils.getIndexInfo(MongoDriver, 'users', 'email');
