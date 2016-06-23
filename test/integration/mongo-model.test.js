@@ -2,9 +2,9 @@ import co from 'co';
 import { expect } from 'chai';
 import MongoDriver from '../../src/mongo-driver';
 import MongoUtils from '../../src/mongo-utils';
-import MongoCrudOperatorBuilder from '../../src/mongo-crud-operator-builder';
+import MongoCrudOperator from '../../src/mongo-crud-operator';
 import { Types } from '../../src/type';
-import Schema from '../../src/schema';
+import MongoSchema from '../../src/mongo-schema';
 import ModelBuilder from '../../src/model-builder';
 
 const DB_NAME = "simple-odm";
@@ -21,7 +21,7 @@ describe('mongo-model', function () {
     it('should create a unique index when the model with the schema that has the unique flagged path is saved.', (done) => {
         co(function* () {
 
-            const schema = new Schema({
+            const schema = new MongoSchema({
                 name: 'user',
                 paths: {
                     email: {
@@ -30,19 +30,23 @@ describe('mongo-model', function () {
                 }
             });
 
-            const User = ModelBuilder.build(schema);
+            const User = ModelBuilder.build({
+                driver: MongoDriver,
+                operator: MongoCrudOperator,
+                schema
+            });
 
             const model = new User({
                 email: "test"
             });
 
-            const operator = MongoCrudOperatorBuilder.build(MongoDriver, 'users');
-            const res1 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
-            const res2 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
-            const info = yield MongoUtils.getIndexInfo(MongoDriver, 'users', 'email');
-            expect(res1).to.equal('email_1');
-            expect(res2).to.equal('email_1');
-            expect(info).to.not.equal(null);
+            yield model.save();
+
+            const users = yield User.findMany();
+
+            expect(users.length).to.equal(1);
+            expect(users[0].getValues().email).to.equal("test");
+
             done();
         }).catch((e) => {
             done(e);
