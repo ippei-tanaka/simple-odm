@@ -1,8 +1,8 @@
 import co from 'co';
 import { SimpleOdmError } from './errors';
-import Immutable from 'immutable';
 import Schema from './schema';
 import pathFunctions from './path-functions';
+import Store from './store';
 import EventHub from './event-hub';
 
 const inspectErrors = ({schema, updated, values}) => co(function* ()
@@ -26,18 +26,9 @@ class Model {
      */
     constructor (schema, values = {})
     {
-        if (typeof values !== 'object' || values === null)
-        {
-            throw new SimpleOdmError("The values argument has to be an object");
-        }
-
         this._schema = schema;
-
-        this._state = {
-            dataList: Immutable.fromJS([values]),
-            errorList: Immutable.List()
-        };
-
+        this._values = new Store(values);
+        this._errors = new Store();
         Object.freeze(this);
     }
 
@@ -67,48 +58,46 @@ class Model {
 
     getInitialValues ()
     {
-        return this._state.dataList.first().toJS();
+        return this._values.getFirst();
     }
 
     getValues ()
     {
-        return this._state.dataList.last().toJS();
+        return this._values.get();
     }
 
     setValues (values)
     {
-        this._state.dataList = this._state.dataList.push(Immutable.fromJS(values));
+        this._values.set(values);
     }
 
     addValues (values)
     {
-        const newValues = this._state.dataList.last().merge(Immutable.fromJS(values));
-        this._state.dataList = this._state.dataList.push(newValues);
+        this._values.add(values);
     }
 
     getErrors ()
     {
-        return this._state.errorList.last().toJS();
+        return this._errors.get();
     }
 
     setErrors (errors)
     {
-        this._state.errorList = this._state.errorList.push(Immutable.fromJS(errors));
+        return this._errors.set(errors);
     }
 
     addErrors (errors)
     {
-        const newErrors = this._state.errorList.last().merge(Immutable.fromJS(errors));
-        this._state.errorList = this._state.errorList.push(newErrors);
+        this._errors.add(errors);
     }
 
     get isUpdated ()
     {
-        return this._state.dataList.size > 1;
+        return this._values.isUpdated;
     }
 
     get hasErrors () {
-        return this._state.errorList.last().filter((v) => v.size > 0).size > 0;
+        return !this._errors.isEmpty;
     }
 
     inspect ()
