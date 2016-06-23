@@ -8,6 +8,12 @@ import EventHub from '../../src/event-hub';
 
 describe('model', function ()
 {
+
+    const operator = {
+        insertOne: () => Promise.resolve(true),
+        updateOne: () => Promise.resolve(true)
+    };
+
     it('should throw an error if values have invalid data.', (done) =>
     {
         co(function* ()
@@ -29,7 +35,7 @@ describe('model', function ()
                 }
             });
 
-            const User = ModelBuilder.build(schema);
+            const User = ModelBuilder.build({schema, operator});
 
             const model = new User({
                 email: "test"
@@ -75,7 +81,7 @@ describe('model', function ()
                 });
             });
 
-            const User = ModelBuilder.build(schema);
+            const User = ModelBuilder.build({schema, operator});
 
             const model = new User({
                 email: "test"
@@ -146,7 +152,7 @@ describe('model', function ()
                 });
             }));
 
-            const User = ModelBuilder.build(schema);
+            const User = ModelBuilder.build({schema, operator});
 
             const model = new User({
                 email: "test"
@@ -183,7 +189,7 @@ describe('model', function ()
                 }
             });
 
-            const User = ModelBuilder.build(schema);
+            const User = ModelBuilder.build({schema, operator});
 
             const model = new User({
                 email: "test"

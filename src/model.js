@@ -21,16 +21,44 @@ const inspectErrors = ({schema, updated, values}) => co(function* ()
 
 class Model {
 
+    static findMany ({operator, driver, schema}, {query = {}, sort = {}, limit = 0, skip = 0} = {})
+    {
+        const ThisModel = this.bind(this, {operator, driver, schema});
+        const collectionName = pluralize(schema.name);
+
+        return co(function* ()
+        {
+            const docs = yield operator.findMany(driver, collectionName, query, sort, limit, skip);
+            return docs.map(doc => new ThisModel(doc));
+        });
+    }
+
+    static findOne ({operator, driver, schema}, query)
+    {
+        const ThisModel = this.bind(this, {operator, driver, schema});
+        const collectionName = pluralize(schema.name);
+
+        return co(function* ()
+        {
+            const doc = yield operator.findOne(driver, collectionName, query);
+            return doc ? new ThisModel(doc) : null;
+        });
+    }
+
     /**
+     * @param operator {CrudOperator}
+     * @param driver {Driver}
      * @param schema {Schema}
      * @param values {object}
      */
-    constructor (schema, values = {})
+    constructor ({operator, driver, schema}, values = {})
     {
         this._schema = schema;
         this._values = new Store(values);
         this._errors = new Store();
-        //this._collectionName = pluralize(schema.name);
+        this._driver = driver;
+        this._operator = operator;
+        this._collectionName = pluralize(schema.name);
         Object.freeze(this);
     }
 
@@ -130,7 +158,16 @@ class Model {
                 throw this.getErrors();
             }
 
-
+            if (!this.isUpdated)
+            {
+                const values = this.getValues();
+                const primaryKey = this._schema.primaryPathName;
+                const query = {[primaryKey]: values[primaryKey]};
+                return yield this._operator.updateOne(this._driver, this._collectionName, query, this.getRefinedValues());
+            } else
+            {
+                return yield this._operator.insertOne(this._driver, this._collectionName, this.getRefinedValues());
+            }
 
         }.bind(this));
     }
