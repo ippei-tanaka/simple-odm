@@ -4,7 +4,7 @@ import { Types } from './type';
 const idPath = {
     _id: {
         type: Types.MongoObjectID,
-        required: true
+        required: ['updated']
     }
 };
 
@@ -17,7 +17,7 @@ class MongoSchema extends Schema {
     constructor ({name, paths = {}})
     {
         const thisPaths = Object.assign({}, paths, idPath);
-        super({name, thisPaths});
+        super({name, paths: thisPaths});
     }
 
     get primaryPathName ()
@@ -26,4 +26,4 @@ class MongoSchema extends Schema {
     }
 }
 
-export default Object.freeze(Schema);
+export default Object.freeze(MongoSchema);

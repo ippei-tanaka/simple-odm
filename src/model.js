@@ -74,7 +74,6 @@ class Model {
             for (let path of schema)
             {
                 const value = values[path.name];
-
                 try
                 {
                     obj[path.name] = yield pathFunctions.getRefinedValue({path, value});
@@ -131,14 +130,28 @@ class Model {
         this._errors.add(errors);
     }
 
-    get isUpdated ()
-    {
-        return this._values.isUpdated;
-    }
-
     get hasErrors ()
     {
         return !this._errors.isEmpty;
+    }
+
+    get id ()
+    {
+        return this.getInitialValues()[this._schema.primaryPathName] || null;
+    }
+
+    get idQuery ()
+    {
+        const id = this.id;
+
+        if (id)
+        {
+            return {[this._schema.primaryPathName]: id};
+        }
+        else
+        {
+            return null;
+        }
     }
 
     save ()
@@ -147,7 +160,7 @@ class Model {
         {
             this._errors.set(yield inspectErrors({
                 schema: this._schema,
-                updated: this.isUpdated,
+                updated: !!this.id,
                 values: this.getValues()
             }));
 
@@ -158,15 +171,13 @@ class Model {
                 throw this.getErrors();
             }
 
-            if (!this.isUpdated)
+            if (!this.id)
             {
-                const values = this.getValues();
-                const primaryKey = this._schema.primaryPathName;
-                const query = {[primaryKey]: values[primaryKey]};
-                return yield this._operator.updateOne(this._driver, this._collectionName, query, this.getRefinedValues());
-            } else
+                return yield this._operator.insertOne(this._driver, this._collectionName, (yield this.getRefinedValues()));
+            }
+            else
             {
-                return yield this._operator.insertOne(this._driver, this._collectionName, this.getRefinedValues());
+                return yield this._operator.updateOne(this._driver, this._collectionName, this.idQuery, (yield this.getRefinedValues()));
             }
 
         }.bind(this));
