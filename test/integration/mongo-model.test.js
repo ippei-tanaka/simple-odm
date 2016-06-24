@@ -18,7 +18,7 @@ describe('mongo-model', function () {
 
     this.timeout(10000);
 
-    it('should create a unique index when the model with the schema that has the unique flagged path is saved.', (done) => {
+    it('should save a model.', (done) => {
         co(function* () {
 
             const schema = new MongoSchema({
@@ -33,8 +33,13 @@ describe('mongo-model', function () {
             const User = ModelBuilder.build({
                 driver: MongoDriver,
                 operator: MongoCrudOperator,
+                utils: MongoUtils,
                 schema
             });
+
+            let users = yield User.findMany();
+
+            expect(users.length).to.equal(0);
 
             const model = new User({
                 email: "test"
@@ -42,7 +47,7 @@ describe('mongo-model', function () {
 
             yield model.save();
 
-            const users = yield User.findMany();
+            users = yield User.findMany();
 
             expect(users.length).to.equal(1);
             expect(users[0].getValues().email).to.equal("test");
@@ -53,6 +58,40 @@ describe('mongo-model', function () {
         });
     });
 
-    
+    it('should create a unique index when the model with the schema that has the unique flagged path is saved.', (done) => {
+        co(function* () {
+
+            const schema = new MongoSchema({
+                name: 'user',
+                paths: {
+                    email: {
+                        required: true,
+                        unique: true
+                    }
+                }
+            });
+
+            const User = ModelBuilder.build({
+                driver: MongoDriver,
+                operator: MongoCrudOperator,
+                utils: MongoUtils,
+                schema
+            });
+
+            const model = new User({
+                email: "test"
+            });
+
+            yield model.save();
+
+            const info = yield MongoUtils.getIndexInfo(MongoDriver, "users");
+
+            expect(info.filter(v => v.key.email === 1 && v.unique === true).length).to.equal(1);
+
+            done();
+        }).catch((e) => {
+            done(e);
+        });
+    });
 
 });

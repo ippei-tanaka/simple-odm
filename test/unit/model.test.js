@@ -14,6 +14,10 @@ describe('model', function ()
         updateOne: () => Promise.resolve(true)
     };
 
+    const utils = {
+        getIndexInfo: () => Promise.resolve(true)
+    };
+
     it('should throw an error if values have invalid data.', (done) =>
     {
         co(function* ()
@@ -35,7 +39,7 @@ describe('model', function ()
                 }
             });
 
-            const User = ModelBuilder.build({schema, operator});
+            const User = ModelBuilder.build({schema, operator, utils});
 
             const model = new User({
                 email: "test"
@@ -81,7 +85,7 @@ describe('model', function ()
                 });
             });
 
-            const User = ModelBuilder.build({schema, operator});
+            const User = ModelBuilder.build({schema, operator, utils});
 
             const model = new User({
                 email: "test"
@@ -152,7 +156,7 @@ describe('model', function ()
                 });
             }));
 
-            const User = ModelBuilder.build({schema, operator});
+            const User = ModelBuilder.build({schema, operator, utils});
 
             const model = new User({
                 email: "test"

@@ -61,9 +61,10 @@ class Model {
      * @param operator {CrudOperator}
      * @param driver {Driver}
      * @param schema {Schema}
+     * @param utils {DbUtils}
      * @param values {object}
      */
-    constructor ({operator, driver, schema}, values = {})
+    constructor ({operator, driver, schema, utils}, values = {})
     {
         if (!isObject(values))
         {
@@ -73,6 +74,7 @@ class Model {
         this._schema = schema;
         this._driver = driver;
         this._operator = operator;
+        this._utils = utils;
         this._collectionName = pluralize(schema.name);
 
         initialValues.set(this, Immutable.fromJS(values));
@@ -201,10 +203,15 @@ class Model {
         const collectionName = this._collectionName;
         const operator = this._operator;
         const schema = this._schema;
+        const utils = this._utils;
         const id = this.id;
 
         return co(function* ()
         {
+
+            // Inspect errors based on the model's value,
+            // the model's schema, and whether the model has an ID.
+
             const _inspectedErrors = yield inspectErrors({
                 schema,
                 updated: !!id,
@@ -213,7 +220,15 @@ class Model {
 
             inspectedErrors.set(this, Immutable.fromJS(_inspectedErrors));
 
+
+            // Invoke the before save event.
+            // Listeners of this event are given the model.
+            // They may modify its overridden errors or values.
+
             yield EventHub.emit(schema.BEFORE_SAVED, this);
+
+
+            // Throw errors if they exist.
 
             const errors = this.getErrors();
 
@@ -221,6 +236,35 @@ class Model {
             {
                 throw errors;
             }
+
+
+            // Create unique indexes if they don't exist.
+
+            let info = null;
+
+            try
+            {
+                info = yield utils.getIndexInfo(driver, collectionName);
+            } catch (e)
+            {}
+
+            for (let path of schema)
+            {
+                if (!path.isUnique)
+                {
+                    continue;
+                }
+
+                const hasUniqueIndex = info === null ? false : info.filter(v => v.key[path.name] === 1 && v.unique === true).length > 0;
+
+                if (!hasUniqueIndex)
+                {
+                    yield utils.createUniqueIndex(driver, collectionName, path.name);
+                }
+            }
+
+
+            // Insert or update the model based on whether it has an ID.
 
             if (!id)
             {

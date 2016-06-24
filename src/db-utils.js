@@ -22,7 +22,7 @@ export default class DbUtils {
         throw new SimpleOdmError("Implement getIndexInfo")
     }
 
-    static  dropIndex ()
+    static dropIndex ()
     {
         throw new SimpleOdmError("Implement dropIndex")
     }
