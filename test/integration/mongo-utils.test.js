@@ -19,7 +19,7 @@ describe('mongo-utils', function () {
         co(function* () {
             const res1 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
             const res2 = yield MongoUtils.createUniqueIndex(MongoDriver, 'users', 'email');
-            const info = yield MongoUtils.getIndexInfo(MongoDriver, 'users', 'email');
+            const info = yield MongoUtils.getIndexInfo(MongoDriver, 'users');
             expect(res1).to.equal('email_1');
             expect(res2).to.equal('email_1');
             expect(info).to.not.equal(null);

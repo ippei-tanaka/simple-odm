@@ -18,12 +18,12 @@ class MongoUtils extends DbUtils {
         });
     }
 
-    static getIndexInfo (driver, collectionName, pathName)
+    static getIndexInfo (driver, collectionName)
     {
         return co(function* ()
         {
             const db = yield driver.connect();
-            return yield db.collection(collectionName).indexInformation(pathName);
+            return yield db.collection(collectionName).indexInformation({full: true});
         });
     }
 
