@@ -75,7 +75,7 @@ describe('model', function ()
 
             EventHub.on(schema.BEFORE_SAVED, model =>
             {
-                model.addValues({
+                model.addOverriddenValues({
                     email: model.getValues().email + "?",
                     age: 20
                 });
@@ -122,7 +122,7 @@ describe('model', function ()
 
             EventHub.on(schema.BEFORE_SAVED, model =>
             {
-                model.setErrors(Object.assign({}, model.getErrors(), {
+                model.setOverriddenErrors(Object.assign({}, model.getErrors(), {
                     fake_password: ["Boo!"]
                 }));
             });
@@ -131,7 +131,7 @@ describe('model', function ()
             {
                 setTimeout(() =>
                 {
-                    model.setErrors(Object.assign({}, model.getErrors(), {
+                    model.setOverriddenErrors(Object.assign({}, model.getErrors(), {
                         fake_email: ["Oh, no!", "You added something new!"]
                     }));
                     resolve();
@@ -144,7 +144,7 @@ describe('model', function ()
                 {
                     setTimeout(() =>
                     {
-                        model.addErrors({
+                        model.addOverriddenErrors({
                             fake_age: ["Ho ho!"]
                         });
                         resolve();
@@ -172,43 +172,6 @@ describe('model', function ()
             expect(error.fake_age[0]).to.equal("Ho ho!");
 
             done();
-        }).catch((e) =>
-        {
-            done(e);
-        });
-    });
-
-    it('should not let users manually modify the model errors before they were modified by the model.', (done) =>
-    {
-        co(function* ()
-        {
-            const schema = new Schema({
-                name: 'user',
-                paths: {
-                    email: {}
-                }
-            });
-
-            const User = ModelBuilder.build({schema, operator});
-
-            const model = new User({
-                email: "test"
-            });
-
-            let error;
-
-            try {
-                yield model.setErrors({
-                    email: "Oh!"
-                });
-            } catch (e) {
-                error = e;
-            }
-
-            expect(error.message).to.equal("Errors of a model can't be modified manually before inspected.");
-
-            done();
-
         }).catch((e) =>
         {
             done(e);
