@@ -1,27 +1,10 @@
 import co from 'co';
 import { SimpleOdmError } from './errors';
 import Schema from './schema';
-import pathFunctions from './path-functions';
 import EventHub from './event-hub';
 import pluralize from 'pluralize';
 import Immutable from 'immutable';
-
-const inspectErrors = ({schema, updated, values}) => co(function* ()
-{
-    let errorMessages = {};
-
-    for (let path of schema)
-    {
-        const value = values[path.name];
-        errorMessages[path.name] = yield pathFunctions.inspectErrors({path, value, updated});
-    }
-
-    return errorMessages;
-});
-
-const createIdQuery = (key, id) => id ? {[key]: id} : null;
-
-const isObject = a => typeof a === 'object' && a !== null;
+import modelFunctions from './model-functions';
 
 const initialValues = new WeakMap();
 
@@ -66,7 +49,7 @@ class Model {
      */
     constructor ({operator, driver, schema, utils}, values = {})
     {
-        if (!isObject(values))
+        if (!modelFunctions.isObject(values))
         {
             throw new SimpleOdmError("The values have to be an object");
         }
@@ -103,7 +86,7 @@ class Model {
 
     setOverriddenValues (values)
     {
-        if (!isObject(values))
+        if (!modelFunctions.isObject(values))
         {
             throw new SimpleOdmError("The values have to be an object");
         }
@@ -113,7 +96,7 @@ class Model {
 
     addOverriddenValues (values)
     {
-        if (!isObject(values))
+        if (!modelFunctions.isObject(values))
         {
             throw new SimpleOdmError("The values have to be an object");
         }
@@ -129,23 +112,7 @@ class Model {
     {
         const schema = this._schema;
         const values = this.getValues();
-
-        return co(function* ()
-        {
-            let obj = {};
-
-            for (let path of schema)
-            {
-                const value = values[path.name];
-                try
-                {
-                    obj[path.name] = yield pathFunctions.getRefinedValue({path, value});
-                } catch (e)
-                {}
-            }
-
-            return obj;
-        })
+        return modelFunctions.generateRefinedValues({schema, values});
     }
 
     getErrors ()
@@ -170,7 +137,7 @@ class Model {
 
     setOverriddenErrors (errors)
     {
-        if (!isObject(errors))
+        if (!modelFunctions.isObject(errors))
         {
             throw new SimpleOdmError("The errors have to be an object");
         }
@@ -180,7 +147,7 @@ class Model {
 
     addOverriddenErrors (errors)
     {
-        if (!isObject(errors))
+        if (!modelFunctions.isObject(errors))
         {
             throw new SimpleOdmError("The errors have to be an object");
         }
@@ -212,7 +179,7 @@ class Model {
             // Inspect errors based on the model's value,
             // the model's schema, and whether the model has an ID.
 
-            const _inspectedErrors = yield inspectErrors({
+            const _inspectedErrors = yield modelFunctions.inspectErrors({
                 schema,
                 updated: !!id,
                 values: this.getValues()
@@ -274,7 +241,7 @@ class Model {
             }
             else
             {
-                yield operator.updateOne(driver, collectionName, createIdQuery(schema.primaryPathName, id), (yield this.getRefinedValues()));
+                yield operator.updateOne(driver, collectionName, modelFunctions.createIdQuery(schema.primaryPathName, id), (yield this.getRefinedValues()));
             }
 
         }.bind(this));
