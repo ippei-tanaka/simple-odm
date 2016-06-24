@@ -2,9 +2,9 @@ import co from 'co';
 import { SimpleOdmError } from './errors';
 import Schema from './schema';
 import pathFunctions from './path-functions';
-import Store from './store';
 import EventHub from './event-hub';
 import pluralize from 'pluralize';
+import Immutable from 'immutable';
 
 const inspectErrors = ({schema, updated, values}) => co(function* ()
 {
@@ -18,6 +18,18 @@ const inspectErrors = ({schema, updated, values}) => co(function* ()
 
     return errorMessages;
 });
+
+const createIdQuery = (key, id) => id ? {[key]: id} : null;
+
+const isObject = a => typeof a === 'object' && a !== null;
+
+const initialValues = new WeakMap();
+
+const overriddenValues = new WeakMap();
+
+const inspectedErrors = new WeakMap();
+
+const overriddenErrors = new WeakMap();
 
 class Model {
 
@@ -53,13 +65,62 @@ class Model {
      */
     constructor ({operator, driver, schema}, values = {})
     {
+        if (!isObject(values))
+        {
+            throw new SimpleOdmError("The values have to be an object");
+        }
+
         this._schema = schema;
-        this._values = new Store(values);
-        this._errors = new Store();
         this._driver = driver;
         this._operator = operator;
         this._collectionName = pluralize(schema.name);
+
+        initialValues.set(this, Immutable.fromJS(values));
+
         Object.freeze(this);
+    }
+
+    getValues ()
+    {
+        const initialValues = this.getInitialValues();
+        const overriddenValues = this.getOverriddenValues();
+        return Object.assign({}, initialValues, overriddenValues);
+    }
+
+    getInitialValues ()
+    {
+        const obj = initialValues.get(this);
+        return obj !== undefined ? obj.toJS() : null;
+    }
+
+    getOverriddenValues ()
+    {
+        const obj = overriddenValues.get(this);
+        return obj !== undefined ? obj.toJS() : null;
+    }
+
+    setOverriddenValues (values)
+    {
+        if (!isObject(values))
+        {
+            throw new SimpleOdmError("The values have to be an object");
+        }
+
+        overriddenValues.set(this, Immutable.fromJS(values));
+    }
+
+    addOverriddenValues (values)
+    {
+        if (!isObject(values))
+        {
+            throw new SimpleOdmError("The values have to be an object");
+        }
+
+        let obj = overriddenValues.get(this);
+
+        obj = obj !== undefined ? obj : Immutable.Map();
+
+        overriddenValues.set(this, obj.merge(Immutable.fromJS(values)));
     }
 
     getRefinedValues ()
@@ -85,54 +146,48 @@ class Model {
         })
     }
 
-    getInitialValues ()
-    {
-        return this._values.getInitialData();
-    }
-
-    getValues ()
-    {
-        return this._values.get();
-    }
-
-    setValues (values)
-    {
-        this._values.set(values);
-    }
-
-    addValues (values)
-    {
-        this._values.add(values);
-    }
-
     getErrors ()
     {
-        return this._errors.get();
+        const _inspectedErrors = inspectedErrors.get(this) || Immutable.Map();
+        const _overriddenErrors = overriddenErrors.get(this) || Immutable.Map();
+        const filtered = _inspectedErrors.merge(_overriddenErrors).filter(v => v.size > 0);
+        return filtered.size > 0 ? filtered.toJS() : null;
     }
 
-    setErrors (errors)
+    getInspectedErrors ()
     {
-        if (!this._errors.isUpdated)
+        const obj = inspectedErrors.get(this);
+        return obj !== undefined ? obj.toJS() : null;
+    }
+
+    getOverriddenErrors ()
+    {
+        const obj = overriddenErrors.get(this);
+        return obj !== undefined ? obj.toJS() : null;
+    }
+
+    setOverriddenErrors (errors)
+    {
+        if (!isObject(errors))
         {
-            throw new SimpleOdmError("Errors of a model can't be modified manually before inspected.");
+            throw new SimpleOdmError("The errors have to be an object");
         }
 
-        return this._errors.set(errors);
+        overriddenErrors.set(this, Immutable.fromJS(errors));
     }
 
-    addErrors (errors)
+    addOverriddenErrors (errors)
     {
-        if (!this._errors.isUpdated)
+        if (!isObject(errors))
         {
-            throw new SimpleOdmError("Errors of a model can't be modified manually before inspected.");
+            throw new SimpleOdmError("The errors have to be an object");
         }
 
-        this._errors.add(errors);
-    }
+        let obj = overriddenErrors.get(this);
 
-    get hasErrors ()
-    {
-        return !this._errors.isEmpty;
+        obj = obj !== undefined ? obj : Immutable.Map();
+
+        overriddenErrors.set(this, obj.merge(Immutable.fromJS(errors)));
     }
 
     get id ()
@@ -140,44 +195,42 @@ class Model {
         return this.getInitialValues()[this._schema.primaryPathName] || null;
     }
 
-    get idQuery ()
-    {
-        const id = this.id;
-
-        if (id)
-        {
-            return {[this._schema.primaryPathName]: id};
-        }
-        else
-        {
-            return null;
-        }
-    }
-
     save ()
     {
+        const driver = this._driver;
+        const collectionName = this._collectionName;
+        const operator = this._operator;
+        const schema = this._schema;
+        const id = this.id;
+
         return co(function* ()
         {
-            this._errors.set(yield inspectErrors({
-                schema: this._schema,
-                updated: !!this.id,
+            const _inspectedErrors = yield inspectErrors({
+                schema,
+                updated: !!id,
                 values: this.getValues()
-            }));
+            });
 
-            yield EventHub.emit(this._schema.BEFORE_SAVED, this);
+            inspectedErrors.set(this, Immutable.fromJS(_inspectedErrors));
 
-            if (this.hasErrors)
+            yield EventHub.emit(schema.BEFORE_SAVED, this);
+
+            const errors = this.getErrors();
+
+            if (errors)
             {
-                throw this.getErrors();
+                throw errors;
             }
 
-            if (!this.id)
+            if (!id)
             {
-                return yield this._operator.insertOne(this._driver, this._collectionName, (yield this.getRefinedValues()));
+                const ret = yield operator.insertOne(driver, collectionName, (yield this.getRefinedValues()));
+                const newID = ret.insertedId;
+                initialValues.get(this).set(schema.primaryPathName, newID);
             }
             else
             {
-                return yield this._operator.updateOne(this._driver, this._collectionName, this.idQuery, (yield this.getRefinedValues()));
+                yield operator.updateOne(driver, collectionName, createIdQuery(schema.primaryPathName, id), (yield this.getRefinedValues()));
             }
 
         }.bind(this));
