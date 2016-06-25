@@ -2,10 +2,9 @@ import co from 'co';
 import { expect } from 'chai';
 import MongoDriver from '../../src/mongo-driver';
 import MongoUtils from '../../src/mongo-utils';
-import MongoCrudOperator from '../../src/mongo-crud-operator';
-import { Types } from '../../src/type';
 import MongoSchema from '../../src/mongo-schema';
 import MongoModelBuilder from '../../src/mongo-model-builder';
+import { Types } from '../../src/type';
 
 const DB_NAME = "simple-odm";
 
