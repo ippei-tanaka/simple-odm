@@ -5,7 +5,7 @@ import MongoUtils from '../../src/mongo-utils';
 import MongoCrudOperator from '../../src/mongo-crud-operator';
 import { Types } from '../../src/type';
 import MongoSchema from '../../src/mongo-schema';
-import ModelBuilder from '../../src/model-builder';
+import MongoModelBuilder from '../../src/mongo-model-builder';
 
 const DB_NAME = "simple-odm";
 
@@ -30,12 +30,7 @@ describe('mongo-model', function () {
                 }
             });
 
-            const User = ModelBuilder.build({
-                driver: MongoDriver,
-                operator: MongoCrudOperator,
-                utils: MongoUtils,
-                schema
-            });
+            const User = MongoModelBuilder.build({schema});
 
             let users = yield User.findMany();
 
@@ -71,12 +66,7 @@ describe('mongo-model', function () {
                 }
             });
 
-            const User = ModelBuilder.build({
-                driver: MongoDriver,
-                operator: MongoCrudOperator,
-                utils: MongoUtils,
-                schema
-            });
+            const User = MongoModelBuilder.build({schema});
 
             const model = new User({
                 email: "test"
