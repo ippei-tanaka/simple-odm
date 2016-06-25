@@ -18,6 +18,79 @@ describe('model', function ()
         getIndexInfo: () => Promise.resolve(true)
     };
 
+    it('should accept various validate attributes.', (done) =>
+    {
+        co(function* ()
+        {
+            const schema = new Schema({
+                name: 'user',
+                paths: {
+                    email: {
+                        required: true,
+                        validate: function (v)
+                        {
+                            if (!validator.isEmail(v))
+                            {
+                                return `"${v}" is not a valid email.`;
+                            }
+                        }
+                    },
+
+                    age: {
+                        required: true,
+                        validate: function (v)
+                        {
+                            if (!validator.isNumeric(v))
+                            {
+                                return [`"${v}" is not a number.`];
+                            }
+                        }
+                    },
+
+                    gender: {
+                        required: true,
+                        validate: function* (v)
+                        {
+                            yield `Gender is not binary, though.`;
+
+                            if (typeof v !== "boolean")
+                            {
+                                yield `"${v}" is not a boolean.`;
+                            }
+                        }
+                    }
+                }
+            });
+
+            const User = ModelBuilder.build({schema, operator, utils});
+
+            const model = new User({
+                email: "test",
+                age: "a",
+                gender: 2
+            });
+
+            let error;
+
+            try {
+                yield model.save();
+            } catch (e) {
+                error = e;
+            }
+
+            expect(error.email[0]).to.equal('"test" is not a valid email.');
+            expect(error.age[0]).to.equal('"a" is not a number.');
+            expect(error.gender[0]).to.equal('Gender is not binary, though.');
+            expect(error.gender[1]).to.equal('"2" is not a boolean.');
+
+            done();
+
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
+
     it('should throw an error if values have invalid data.', (done) =>
     {
         co(function* ()
