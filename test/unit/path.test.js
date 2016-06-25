@@ -17,7 +17,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('A path name has to be string.');
+            expect(error.message).to.equal('The path name has to be string.');
 
             done();
         }).catch((e) => {
@@ -36,7 +36,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('An options argument has to be an object.');
+            expect(error.message).to.equal('The options argument of "slug" has to be an object.');
 
             done();
         }).catch((e) => {
@@ -81,7 +81,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('A display name has to be string.');
+            expect(error.message).to.equal('The display name of "slug" has to be string.');
 
             done();
         }).catch((e) => {
@@ -100,7 +100,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('A type attribute has to be a type.');
+            expect(error.message).to.equal('The type attribute of "slug" has to be a type.');
 
             done();
         }).catch((e) => {
@@ -140,7 +140,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('The default value is not valid as the "Integer" type.');
+            expect(error.message).to.equal('The default value of "slug" is not valid as the "Integer" type.');
 
             done();
         }).catch((e) => {
@@ -161,7 +161,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('The default value is not valid as the "String" type.');
+            expect(error.message).to.equal('The default value of "slug" is not valid as the "String" type.');
 
             done();
         }).catch((e) => {
@@ -203,7 +203,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('The unique attribute has to be either boolean or a function.');
+            expect(error.message).to.equal('The unique attribute of "slug" has to be either boolean or a function.');
 
             done();
         }).catch((e) => {
@@ -259,7 +259,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('The projected attribute has to be boolean.');
+            expect(error.message).to.equal('The projected attribute of "slug" has to be boolean.');
 
             done();
         }).catch((e) => {
@@ -280,7 +280,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('The require attribute has to be either boolean, an array, a function or an object.');
+            expect(error.message).to.equal('The require attribute of "slug" has to be either boolean, an array, a function or an object.');
 
             done();
         }).catch((e) => {
@@ -367,7 +367,7 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('The sanitize attribute has to be a function.');
+            expect(error.message).to.equal('The sanitize attribute of "slug" has to be a function.');
 
             done();
         }).catch((e) => {
@@ -408,20 +408,19 @@ describe('path', function () {
             }
 
             expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('The validate attribute has to be a generator function.');
+            expect(error.message).to.equal('The validate attribute of "slug" has to be a function.');
 
-            error = null;
+            error = undefined;
 
             try {
                 new Path("slug", {
                     validate: () => {}
                 });
             } catch (e) {
-                error = e;
+                error = e || null;
             }
 
-            expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('The validate attribute has to be a generator function.');
+            expect(error).to.be.an('undefined');
 
             done();
         }).catch((e) => {

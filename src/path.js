@@ -36,41 +36,41 @@ export default class Path {
     constructor(name, options = {}) {
 
         if (typeof name !== "string") {
-            throw new SimpleOdmError('A path name has to be string.');
+            throw new SimpleOdmError(`The path name has to be string.`);
         }
 
         if (typeof options !== "object"
             || options === null
             || Array.isArray(options)) {
-            throw new SimpleOdmError('An options argument has to be an object.');
+            throw new SimpleOdmError(`The options argument of "${name}" has to be an object.`);
         }
 
         if (options.hasOwnProperty('display_name')
             && typeof options.display_name !== "string") {
-            throw new SimpleOdmError('A display name has to be string.');
+            throw new SimpleOdmError(`The display name of "${name}" has to be string.`);
         }
 
         if (options.hasOwnProperty('type')
             && !isValidType(options.type)) {
-            throw new SimpleOdmError('A type attribute has to be a type.');
+            throw new SimpleOdmError(`The type attribute of "${name}" has to be a type.`);
         }
 
         if (options.hasOwnProperty('default_value')) {
             const type = options.type || DETAULT_TYPE;
             if (!isValidValueAs(options.default_value, type)) {
-                throw new SimpleOdmError(`The default value is not valid as the "${type}" type.`);
+                throw new SimpleOdmError(`The default value of "${name}" is not valid as the "${type}" type.`);
             }
         }
 
         if (options.hasOwnProperty('unique')
             && typeof options.unique !== "boolean"
             && typeof options.unique !== "function") {
-            throw new SimpleOdmError('The unique attribute has to be either boolean or a function.');
+            throw new SimpleOdmError(`The unique attribute of "${name}" has to be either boolean or a function.`);
         }
 
         if (options.hasOwnProperty('projected')
             && typeof options.projected !== "boolean") {
-            throw new SimpleOdmError('The projected attribute has to be boolean.');
+            throw new SimpleOdmError(`The projected attribute of "${name}" has to be boolean.`);
         }
 
         if (options.hasOwnProperty('required')
@@ -78,17 +78,17 @@ export default class Path {
             && typeof options.required !== "function"
             && typeof options.required !== "object"
             && !Array.isArray(options.required)) {
-            throw new SimpleOdmError('The require attribute has to be either boolean, an array, a function or an object.');
+            throw new SimpleOdmError(`The require attribute of "${name}" has to be either boolean, an array, a function or an object.`);
         }
 
         if (options.hasOwnProperty('sanitize')
             && typeof options.sanitize !== "function") {
-            throw new SimpleOdmError('The sanitize attribute has to be a function.');
+            throw new SimpleOdmError(`The sanitize attribute of "${name}" has to be a function.`);
         }
 
         if (options.hasOwnProperty('validate')
-            && !(options.validate instanceof (defaultValidator).constructor)) {
-            throw new SimpleOdmError('The validate attribute has to be a generator function.');
+            && typeof options.validate !== "function") {
+            throw new SimpleOdmError(`The validate attribute of "${name}" has to be a function.`);
         }
 
         this._name = name;
