@@ -1,21 +1,23 @@
 import co from 'co';
-import Model from './model';
+import _Model from './model';
 
 class ModelBuilder {
 
     static build ({operator, driver, schema, utils})
     {
-        const obj = Model.bind(Model, {operator, driver, schema, utils});
+        const Model = _Model.bind(_Model, {operator, driver, schema, utils});
+        Model.prototype = Object.create(_Model.prototype);
+        Model.prototype.constructor = Model;
 
-        for (let key of Object.getOwnPropertyNames(Model))
+        for (let key of Object.getOwnPropertyNames(_Model))
         {
-            if (typeof Model[key] === "function")
+            if (typeof _Model[key] === "function")
             {
-                obj[key] = Model[key].bind(Model, {operator, driver, schema, utils});
+                Model[key] = _Model[key].bind(_Model, {operator, driver, schema, utils});
             }
         }
 
-        return Object.freeze(obj);
+        return Object.freeze(Model);
     }
 
 }
