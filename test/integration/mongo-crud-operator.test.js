@@ -10,9 +10,8 @@ describe('mongo-crud-operator', function ()
 {
 
     before(() => MongoDriver.setUp({database: DB_NAME}));
-    beforeEach(MongoDriver.connect);
-    beforeEach(() => MongoUtils.dropDatabase(MongoDriver));
-    beforeEach(MongoDriver.disconnect);
+    before(() => MongoUtils.dropDatabase(MongoDriver));
+    beforeEach(() => MongoUtils.removeAllDocuments(MongoDriver));
 
     this.timeout(10000);
 

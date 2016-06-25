@@ -45,6 +45,25 @@ class MongoUtils extends DbUtils {
         });
     }
 
+    static removeAllDocuments (driver)
+    {
+        return co(function* ()
+        {
+            const db = yield driver.connect();
+            const collections = yield db.listCollections().toArray();
+
+            for (let c of collections)
+            {
+                const collection = db.collection(c.name);
+                try
+                {
+                    yield collection.deleteMany({});
+                } catch (e)
+                {}
+            }
+        });
+    }
+
 }
 
 export default Object.freeze(MongoUtils);
