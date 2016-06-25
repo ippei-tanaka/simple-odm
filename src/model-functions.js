@@ -31,7 +31,6 @@ const generateRefinedValues = ({schema, values}) => co(function* ()
             obj[path.name] = yield pathFunctions.getRefinedValue({path, value});
         } catch (e)
         {}
-
     }
 
     return obj;
