@@ -20,31 +20,44 @@ const inspectErrors = ({path, value, updated}) =>
         let errorMessages = [];
         const isEmpty = checkIfEmpty(value);
 
-        if (isEmpty && !updated && path.isRequiredWhenCreated) {
+        if (isEmpty && !updated && path.isRequiredWhenCreated)
+        {
             errorMessages.push(path.requiredWhenCreatedErrorMessageBuilder());
             return errorMessages;
         }
 
-        if (isEmpty && updated && path.isRequiredWhenUpdated) {
+        if (isEmpty && updated && path.isRequiredWhenUpdated)
+        {
             errorMessages.push(path.requiredWhenUpdatedErrorMessageBuilder());
             return errorMessages;
         }
 
-        if (isEmpty) {
+        if (isEmpty)
+        {
             return errorMessages;
         }
 
-        try {
+        try
+        {
             convertTo(value, path.type);
-        } catch (error) {
+        } catch (error)
+        {
             errorMessages.push(path.typeErrorMessageBuilder(value));
             return errorMessages;
         }
 
-        const iterator = path.validator(path.sanitizer(value));
+        const result = path.validator(path.sanitizer(value));
 
-        for (let message of iterator) {
-            errorMessages.push(message);
+        if (typeof result === "string")
+        {
+            errorMessages.push(result);
+        }
+        else
+        {
+            for (let message of result)
+            {
+                errorMessages.push(String(message));
+            }
         }
 
         return errorMessages;
