@@ -16,49 +16,84 @@ const overriddenErrors = new WeakMap();
 
 class Model {
 
-    static findMany ({operator, driver, schema}, {query = {}, sort = {}, limit = 0, skip = 0} = {})
+    /**
+     * @member {CrudOperator}
+     */
+    static get operator ()
     {
-        const ThisModel = this.bind(this, {operator, driver, schema});
-        const collectionName = pluralize(schema.name);
+        throw new SimpleOdmError("Implement operator")
+    };
 
-        return co(function* ()
-        {
-            const docs = yield operator.findMany(driver, collectionName, query, sort, limit, skip);
-            return docs.map(doc => new ThisModel(doc));
-        });
-    }
-
-    static findOne ({operator, driver, schema}, query)
+    /**
+     * @member {Driver}
+     */
+    static get driver ()
     {
-        const ThisModel = this.bind(this, {operator, driver, schema});
-        const collectionName = pluralize(schema.name);
-
-        return co(function* ()
-        {
-            const doc = yield operator.findOne(driver, collectionName, query);
-            return doc ? new ThisModel(doc) : null;
-        });
+        throw new SimpleOdmError("Implement driver")
     }
 
     /**
-     * @param operator {CrudOperator}
-     * @param driver {Driver}
-     * @param schema {Schema}
-     * @param utils {DbUtils}
+     * @member {Schema}
+     */
+    static get schema ()
+    {
+        throw new SimpleOdmError("Implement schema")
+    };
+
+    /**
+     * @member {DbUtils}
+     */
+    static get utils ()
+    {
+        throw new SimpleOdmError("Implement utils")
+    };
+
+    /**
+     * @param query {object}
+     * @param sort {object}
+     * @param limit {number}
+     * @param skip {number}
+     */
+    static findMany ({query = {}, sort = {}, limit = 0, skip = 0} = {})
+    {
+        const collectionName = pluralize(this.schema.name);
+
+        return co(function* ()
+        {
+            const docs = yield this.operator.findMany(this.driver, collectionName, query, sort, limit, skip);
+            return docs.map(doc => new this(doc));
+        }.bind(this));
+    }
+
+    /**
+     * @param query {object}
+     */
+    static findOne (query = {})
+    {
+        const collectionName = pluralize(this.schema.name);
+
+        return co(function* ()
+        {
+            const doc = yield this.operator.findOne(this.driver, collectionName, query);
+            return doc ? new this(doc) : null;
+        }.bind(this));
+    }
+
+    /**
      * @param values {object}
      */
-    constructor ({operator, driver, schema, utils}, values = {})
+    constructor (values = {})
     {
         if (!modelFunctions.isObject(values))
         {
             throw new SimpleOdmError("The values have to be an object");
         }
 
-        this._schema = schema;
-        this._driver = driver;
-        this._operator = operator;
-        this._utils = utils;
-        this._collectionName = pluralize(schema.name);
+        this._schema = this.constructor.schema;
+        this._driver = this.constructor.driver;
+        this._operator = this.constructor.operator;
+        this._utils = this.constructor.utils;
+        this._collectionName = pluralize(this.constructor.schema.name);
 
         initialValues.set(this, Immutable.fromJS(values));
 
@@ -222,7 +257,9 @@ class Model {
                     continue;
                 }
 
-                const hasUniqueIndex = info === null ? false : info.filter(v => v.key[path.name] === 1 && v.unique === true).length > 0;
+                const hasUniqueIndex = info === null
+                    ? false
+                    : info.filter(v => v.key[path.name] === 1 && v.unique === true).length > 0;
 
                 if (!hasUniqueIndex)
                 {
