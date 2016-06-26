@@ -17,56 +17,53 @@ const onDisconnected = () =>
     db = null;
 };
 
-class MongoDriver {
-
-    static connect ()
+const connect = () =>
+    co(function* ()
     {
-        return co(function* ()
+        if (!setting.database)
         {
-            if (!setting.database)
-            {
-                throw new SimpleOdmError("MongoDriver needs a database name to use.");
-            }
-
-            if (!db)
-            {
-                const url = buildUrl(setting);
-                db = yield MongoClient.connect(url);
-                db.on("close", onDisconnected);
-            }
-
-            return db;
-        });
-    }
-
-    static  disconnect ()
-    {
-        return co(function* ()
-        {
-            if (db)
-            {
-                yield db.close();
-            }
-        });
-    }
-
-    static setUp (args)
-    {
-        if (args.hasOwnProperty('port'))
-        {
-            setting.port = args.port;
+            throw new SimpleOdmError("MongoDriver needs a database name to use.");
         }
 
-        if (args.hasOwnProperty('host'))
+        if (!db)
         {
-            setting.host = args.host;
+            const url = buildUrl(setting);
+            db = yield MongoClient.connect(url);
+            db.on("close", onDisconnected);
         }
 
-        if (args.hasOwnProperty('database'))
+        return db;
+    });
+
+const disconnect = () =>
+    co(function* ()
+    {
+        if (db)
         {
-            setting.database = args.database;
+            yield db.close();
         }
+    });
+
+const setUp = (args) =>
+{
+    if (args.hasOwnProperty('port'))
+    {
+        setting.port = args.port;
     }
-}
 
-export default Object.freeze(MongoDriver);
+    if (args.hasOwnProperty('host'))
+    {
+        setting.host = args.host;
+    }
+
+    if (args.hasOwnProperty('database'))
+    {
+        setting.database = args.database;
+    }
+};
+
+export default Object.freeze({
+    connect,
+    disconnect,
+    setUp
+});

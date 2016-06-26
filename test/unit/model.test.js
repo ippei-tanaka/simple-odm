@@ -11,11 +11,9 @@ describe('model', function ()
 
     const operator = {
         insertOne: () => Promise.resolve(true),
-        updateOne: () => Promise.resolve(true)
-    };
-
-    const utils = {
-        getIndexInfo: () => Promise.resolve(true)
+        updateOne: () => Promise.resolve(true),
+        getIndexInfo: () => Promise.resolve(true),
+        createUniqueIndex: () => Promise.resolve(true)
     };
 
     it('should accept various validate attributes.', (done) =>
@@ -64,24 +62,13 @@ describe('model', function ()
 
             class User extends Model {
 
-                static get operator ()
+                static get schema () {
+                    return schema;
+                }
+
+                static get dbOperator ()
                 {
                     return operator;
-                };
-
-                static get schema ()
-                {
-                    return schema;
-                };
-
-                static get utils ()
-                {
-                    return utils;
-                };
-
-                static get driver ()
-                {
-                    return null;
                 };
             }
 
@@ -135,24 +122,13 @@ describe('model', function ()
 
             class User extends Model {
 
-                static get operator ()
+                static get schema () {
+                    return schema;
+                }
+
+                static get dbOperator ()
                 {
                     return operator;
-                };
-
-                static get schema ()
-                {
-                    return schema;
-                };
-
-                static get utils ()
-                {
-                    return utils;
-                };
-
-                static get driver ()
-                {
-                    return null;
                 };
             }
 
@@ -200,26 +176,16 @@ describe('model', function ()
                 });
             });
 
+
             class User extends Model {
 
-                static get operator ()
+                static get schema () {
+                    return schema;
+                }
+
+                static get dbOperator ()
                 {
                     return operator;
-                };
-
-                static get schema ()
-                {
-                    return schema;
-                };
-
-                static get utils ()
-                {
-                    return utils;
-                };
-
-                static get driver ()
-                {
-                    return null;
                 };
             }
 
@@ -292,26 +258,16 @@ describe('model', function ()
                 });
             }));
 
+
             class User extends Model {
 
-                static get operator ()
+                static get schema () {
+                    return schema;
+                }
+
+                static get dbOperator ()
                 {
                     return operator;
-                };
-
-                static get schema ()
-                {
-                    return schema;
-                };
-
-                static get utils ()
-                {
-                    return utils;
-                };
-
-                static get driver ()
-                {
-                    return null;
                 };
             }
 
