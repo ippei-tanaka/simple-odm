@@ -102,9 +102,10 @@ class Model {
 
     getValues ()
     {
-        const initialValues = this.getInitialValues();
-        const overriddenValues = this.getOverriddenValues();
-        return Object.assign({}, initialValues, overriddenValues);
+        const _initialValues = initialValues.get(this) || Immutable.Map();
+        const _overriddenValues = overriddenValues.get(this) || Immutable.Map();
+        const filtered = _initialValues.merge(_overriddenValues).filter(v => v !== undefined);
+        return filtered.toJS();
     }
 
     getInitialValues ()
