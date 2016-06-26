@@ -3,12 +3,13 @@ import { expect } from 'chai';
 import MongoDriver from '../../src/mongo-driver';
 import MongoUtils from '../../src/mongo-utils';
 import MongoSchema from '../../src/mongo-schema';
-import MongoModelBuilder from '../../src/mongo-model-builder';
+import MongoModel from '../../src/mongo-model';
 import { Types } from '../../src/type';
 
 const DB_NAME = "simple-odm";
 
-describe('mongo-model', function () {
+describe('mongo-model', function ()
+{
 
     before(() => MongoDriver.setUp({database: DB_NAME}));
     beforeEach(MongoDriver.connect);
@@ -17,8 +18,10 @@ describe('mongo-model', function () {
 
     this.timeout(10000);
 
-    it('should save a model.', (done) => {
-        co(function* () {
+    it('should save a model.', (done) =>
+    {
+        co(function* ()
+        {
 
             const schema = new MongoSchema({
                 name: 'user',
@@ -29,7 +32,14 @@ describe('mongo-model', function () {
                 }
             });
 
-            const User = MongoModelBuilder.build({schema});
+            class User extends MongoModel {
+
+                static get schema ()
+                {
+                    return schema;
+                };
+
+            }
 
             let users = yield User.findMany();
 
@@ -47,13 +57,16 @@ describe('mongo-model', function () {
             expect(users[0].getValues().email).to.equal("test");
 
             done();
-        }).catch((e) => {
+        }).catch((e) =>
+        {
             done(e);
         });
     });
 
-    it('should create a unique index when the model with the schema that has the unique flagged path is saved.', (done) => {
-        co(function* () {
+    it('should create a unique index when the model with the schema that has the unique flagged path is saved.', (done) =>
+    {
+        co(function* ()
+        {
 
             const schema = new MongoSchema({
                 name: 'user',
@@ -65,7 +78,14 @@ describe('mongo-model', function () {
                 }
             });
 
-            const User = MongoModelBuilder.build({schema});
+            class User extends MongoModel {
+
+                static get schema ()
+                {
+                    return schema;
+                };
+
+            }
 
             const model = new User({
                 email: "test"
@@ -78,7 +98,8 @@ describe('mongo-model', function () {
             expect(info.filter(v => v.key.email === 1 && v.unique === true).length).to.equal(1);
 
             done();
-        }).catch((e) => {
+        }).catch((e) =>
+        {
             done(e);
         });
     });

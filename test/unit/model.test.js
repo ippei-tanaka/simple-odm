@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import validator from 'validator';
 import { Types } from '../../src/type';
 import Schema from '../../src/schema';
-import ModelBuilder from '../../src/model-builder';
+import Model from '../../src/model';
 import EventHub from '../../src/event-hub';
 
 describe('model', function ()
@@ -62,7 +62,28 @@ describe('model', function ()
                 }
             });
 
-            const User = ModelBuilder.build({schema, operator, utils});
+            class User extends Model {
+
+                static get operator ()
+                {
+                    return operator;
+                };
+
+                static get schema ()
+                {
+                    return schema;
+                };
+
+                static get utils ()
+                {
+                    return utils;
+                };
+
+                static get driver ()
+                {
+                    return null;
+                };
+            }
 
             const model = new User({
                 email: "test",
@@ -112,7 +133,28 @@ describe('model', function ()
                 }
             });
 
-            const User = ModelBuilder.build({schema, operator, utils});
+            class User extends Model {
+
+                static get operator ()
+                {
+                    return operator;
+                };
+
+                static get schema ()
+                {
+                    return schema;
+                };
+
+                static get utils ()
+                {
+                    return utils;
+                };
+
+                static get driver ()
+                {
+                    return null;
+                };
+            }
 
             const model = new User({
                 email: "test"
@@ -158,7 +200,28 @@ describe('model', function ()
                 });
             });
 
-            const User = ModelBuilder.build({schema, operator, utils});
+            class User extends Model {
+
+                static get operator ()
+                {
+                    return operator;
+                };
+
+                static get schema ()
+                {
+                    return schema;
+                };
+
+                static get utils ()
+                {
+                    return utils;
+                };
+
+                static get driver ()
+                {
+                    return null;
+                };
+            }
 
             const model = new User({
                 email: "test"
@@ -229,7 +292,28 @@ describe('model', function ()
                 });
             }));
 
-            const User = ModelBuilder.build({schema, operator, utils});
+            class User extends Model {
+
+                static get operator ()
+                {
+                    return operator;
+                };
+
+                static get schema ()
+                {
+                    return schema;
+                };
+
+                static get utils ()
+                {
+                    return utils;
+                };
+
+                static get driver ()
+                {
+                    return null;
+                };
+            }
 
             const model = new User({
                 email: "test"
