@@ -1,4 +1,4 @@
-import Model from './model';
+import Model from './../model';
 import MongoUtils from './mongo-utils';
 import MongoDriver from './mongo-driver';
 import MongoCrudOperator from './mongo-crud-operator';
