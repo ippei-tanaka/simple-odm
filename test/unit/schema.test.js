@@ -1,7 +1,7 @@
 import co from 'co';
 import { expect } from 'chai';
 import Schema from '../../src/schema';
-import { Types } from '../../src/type';
+import Types from '../../src/types';
 import { SimpleOdmError } from '../../src/errors';
 
 describe('schema', function ()

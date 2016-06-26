@@ -1,5 +1,5 @@
 import co from 'co';
-import { convertTo } from './type';
+import typeFunctions from './type-functions';
 import { SimpleOdmError } from './errors';
 
 /**
@@ -39,7 +39,7 @@ const inspectErrors = ({path, value, updated}) =>
 
         try
         {
-            convertTo(value, path.type);
+            typeFunctions.convertTo(value, path.type);
         } catch (error)
         {
             errorMessages.push(path.typeErrorMessageBuilder(value));
@@ -71,7 +71,7 @@ const inspectErrors = ({path, value, updated}) =>
 const getRefinedValue = ({path, value}) =>
     co(function* ()
     {
-        return path.sanitizer(convertTo(value, path.type));
+        return path.sanitizer(typeFunctions.convertTo(value, path.type));
     });
 
 export default {inspectErrors, getRefinedValue};

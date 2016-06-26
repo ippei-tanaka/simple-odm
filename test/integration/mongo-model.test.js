@@ -4,7 +4,6 @@ import MongoDriver from '../../src/mongo/mongo-driver';
 import MongoUtils from '../../src/mongo/mongo-utils';
 import MongoSchema from '../../src/mongo/mongo-schema';
 import MongoModel from '../../src/mongo/mongo-model';
-import { Types } from '../../src/type';
 
 const DB_NAME = "simple-odm";
 
