@@ -1,33 +1,21 @@
 import Model from './../model';
-import MongoUtils from './mongo-utils';
-import MongoDriver from './mongo-driver';
-import MongoCrudOperator from './mongo-crud-operator';
+import mongoDriver from './mongo-driver';
+import mongoModelDbOperations from './mongo-model-db-operations';
+import mongoDbOperatorBuilder from './mongo-db-operator-builder';
+import co from 'co';
+import pluralize from 'pluralize';
+
+const operator = mongoDbOperatorBuilder(mongoDriver, mongoModelDbOperations);
 
 class MongoModel extends Model {
 
     /**
      * @override
      */
-    static get operator ()
+    static get dbOperator ()
     {
-        return MongoCrudOperator;
-    };
-
-    /**
-     * @override
-     */
-    static get driver ()
-    {
-        return MongoDriver;
+        return operator;
     }
-
-    /**
-     * @override
-     */
-    static get utils ()
-    {
-        return MongoUtils;
-    };
 
 }
 

@@ -2,7 +2,6 @@ import co from 'co';
 import { SimpleOdmError } from './errors';
 import Schema from './schema';
 import EventHub from './event-hub';
-import pluralize from 'pluralize';
 import Immutable from 'immutable';
 import modelFunctions from './model-functions';
 
@@ -16,20 +15,9 @@ const overriddenErrors = new WeakMap();
 
 class Model {
 
-    /**
-     * @member {CrudOperator}
-     */
-    static get operator ()
+    static get dbOperator ()
     {
-        throw new SimpleOdmError("Implement operator")
-    };
-
-    /**
-     * @member {Driver}
-     */
-    static get driver ()
-    {
-        throw new SimpleOdmError("Implement driver")
+        throw new SimpleOdmError("Implement dbOperator")
     }
 
     /**
@@ -41,14 +29,6 @@ class Model {
     };
 
     /**
-     * @member {DbUtils}
-     */
-    static get utils ()
-    {
-        throw new SimpleOdmError("Implement utils")
-    };
-
-    /**
      * @param query {object}
      * @param sort {object}
      * @param limit {number}
@@ -56,11 +36,9 @@ class Model {
      */
     static findMany ({query = {}, sort = {}, limit = 0, skip = 0} = {})
     {
-        const collectionName = pluralize(this.schema.name);
-
         return co(function* ()
         {
-            const docs = yield this.operator.findMany(this.driver, collectionName, query, sort, limit, skip);
+            const docs = yield this.dbOperator.findMany({schema: this.schema, query, sort, limit, skip});
             return docs.map(doc => new this(doc));
         }.bind(this));
     }
@@ -70,11 +48,9 @@ class Model {
      */
     static findOne (query = {})
     {
-        const collectionName = pluralize(this.schema.name);
-
         return co(function* ()
         {
-            const doc = yield this.operator.findOne(this.driver, collectionName, query);
+            const doc = yield this.dbOperator.findOne({schema: this.schema, query});
             return doc ? new this(doc) : null;
         }.bind(this));
     }
@@ -90,10 +66,7 @@ class Model {
         }
 
         this._schema = this.constructor.schema;
-        this._driver = this.constructor.driver;
-        this._operator = this.constructor.operator;
-        this._utils = this.constructor.utils;
-        this._collectionName = pluralize(this.constructor.schema.name);
+        this._dbOperator = this.constructor.dbOperator;
 
         initialValues.set(this, Immutable.fromJS(values));
 
@@ -202,11 +175,8 @@ class Model {
 
     save ()
     {
-        const driver = this._driver;
-        const collectionName = this._collectionName;
-        const operator = this._operator;
+        const dbOperator = this._dbOperator;
         const schema = this._schema;
-        const utils = this._utils;
         const id = this.id;
 
         return co(function* ()
@@ -247,7 +217,7 @@ class Model {
 
             try
             {
-                info = yield utils.getIndexInfo(driver, collectionName);
+                info = yield dbOperator.getIndexInfo({schema});
             } catch (e)
             {}
 
@@ -264,7 +234,7 @@ class Model {
 
                 if (!hasUniqueIndex)
                 {
-                    yield utils.createUniqueIndex(driver, collectionName, path.name);
+                    yield dbOperator.createUniqueIndex({schema, pathName: path.name});
                 }
             }
 
@@ -273,13 +243,20 @@ class Model {
 
             if (!id)
             {
-                const ret = yield operator.insertOne(driver, collectionName, (yield this.getRefinedValues()));
+                const ret = yield dbOperator.insertOne({
+                    schema,
+                    values: (yield this.getRefinedValues())
+                });
                 const newID = ret.insertedId;
                 initialValues.get(this).set(schema.primaryPathName, newID);
             }
             else
             {
-                yield operator.updateOne(driver, collectionName, modelFunctions.createIdQuery(schema.primaryPathName, id), (yield this.getRefinedValues()));
+                yield dbOperator.updateOne({
+                    schema,
+                    query: modelFunctions.createIdQuery(schema.primaryPathName, id),
+                    values: (yield this.getRefinedValues())
+                });
             }
 
         }.bind(this));
