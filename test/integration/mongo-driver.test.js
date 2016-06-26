@@ -1,6 +1,6 @@
 import co from 'co';
 import { expect } from 'chai';
-import MongoDriver from '../../src/mongo-driver';
+import MongoDriver from '../../src/mongo/mongo-driver';
 
 const DB_NAME = "simple-odm";
 

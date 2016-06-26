@@ -1,7 +1,6 @@
 import { MongoClient } from 'mongodb';
-import Driver from './driver';
 import co from 'co';
-import { SimpleOdmError } from './errors';
+import { SimpleOdmError } from './../errors';
 
 let db = null;
 
@@ -18,7 +17,7 @@ const onDisconnected = () =>
     db = null;
 };
 
-class MongoDriver extends Driver {
+class MongoDriver {
 
     static connect ()
     {
@@ -70,6 +69,4 @@ class MongoDriver extends Driver {
     }
 }
 
-Object.freeze(MongoDriver);
-
-export default MongoDriver;
+export default Object.freeze(MongoDriver);

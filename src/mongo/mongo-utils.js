@@ -1,7 +1,6 @@
 import co from 'co';
-import DbUtils from './db-utils';
 
-class MongoUtils extends DbUtils {
+class MongoUtils {
 
     static createUniqueIndex (driver, collectionName, pathName)
     {

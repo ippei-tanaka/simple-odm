@@ -1,5 +1,4 @@
 import co from 'co';
-import CrudOperator from './crud-operator';
 
 const connectToCollection = function (driver, collectionName)
 {
@@ -10,7 +9,7 @@ const connectToCollection = function (driver, collectionName)
     });
 };
 
-class MongoCrudOperator extends CrudOperator {
+class MongoCrudOperator {
 
     static findMany (
         driver,
