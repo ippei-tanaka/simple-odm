@@ -1,7 +1,7 @@
 import co from 'co';
 import { expect } from 'chai';
 import validator from 'validator';
-import { Types } from '../../src/type';
+import Types from '../../src/types';
 import Schema from '../../src/schema';
 import Model from '../../src/model';
 import EventHub from '../../src/event-hub';

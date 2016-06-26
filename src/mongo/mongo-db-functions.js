@@ -1,21 +1,21 @@
 import co from 'co';
 
-export const createUniqueIndex = (db, collectionName, pathName) =>
-    createIndex(db, collectionName, pathName, {unique: true});
+export const createUniqueIndex = ({collection, pathName}) =>
+    createIndex({collection, pathName, options: {unique: true}});
 
-export const createIndex = (db, collectionName, pathName, options) =>
-    db.collection(collectionName).createIndex({[pathName]: 1}, options);
+export const createIndex = ({collection, pathName, options}) =>
+    collection.createIndex({[pathName]: 1}, options);
 
-export const getIndexInfo = (db, collectionName) =>
-    db.collection(collectionName).indexInformation({full: true});
+export const getIndexInfo = ({collection}) =>
+    collection.indexInformation({full: true});
 
-export const dropIndex = (db, collectionName, pathName) =>
-    db.collection(collectionName).dropIndex(pathName);
+export const dropIndex = ({collection, pathName}) =>
+    collection.dropIndex(pathName);
 
-export const dropDatabase = (db) =>
+export const dropDatabase = ({db}) =>
     db.dropDatabase();
 
-export const removeAllDocuments = (db) =>
+export const removeAllDocuments = ({db}) =>
 {
     return co(function* ()
     {
@@ -33,3 +33,31 @@ export const removeAllDocuments = (db) =>
     });
 };
 
+export const findMany = ({collection, query = {}, sort = {}, limit = 0, skip = 0, projection = {}} = {}) =>
+    collection
+        .find(query, projection)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit).toArray();
+
+export const findOne = ({collection, query, projection = {}} = {}) =>
+    collection.findOne(query, projection);
+
+export const insertOne = ({collection, values}) =>
+    collection.insertOne(values);
+
+export const updateOne = ({collection, query, values}) =>
+    collection.updateOne(query, {$set: values});
+
+export const deleteOne = ({collection, query}) =>
+    collection.deleteOne(query);
+
+export const aggregate = ({collection, query}) =>
+    new Promise((resolve, reject) =>
+    {
+        collection.aggregate(query, (err, result) =>
+        {
+            if (err) return reject(err);
+            resolve(result);
+        });
+    });
