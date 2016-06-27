@@ -1,5 +1,7 @@
 import co from 'co';
 import EventEmitter from 'events';
+import deepcopy from 'deepcopy';
+import { SimpleOdmError } from './errors';
 
 const emitter = new EventEmitter();
 
@@ -10,22 +12,27 @@ class EventHub {
         return emitter.on.bind(emitter);
     }
 
-    static emit (eventId, ...args)
+    static emit (eventId, argObject)
     {
         const listeners = emitter.listeners(eventId);
-        let ret;
+        let result;
+        let obj = deepcopy(argObject);
 
         return co(function* ()
         {
             for (const listener of listeners)
             {
-                ret = listener.call(null, ...args);
+                result = listener.call(null, obj);
 
-                if (ret instanceof Promise)
+                if (result instanceof Promise)
                 {
-                    yield ret;
+                    result = yield result;
                 }
+
+                obj = Object.assign({}, obj, result);
             }
+
+            return obj;
         });
     }
 }
