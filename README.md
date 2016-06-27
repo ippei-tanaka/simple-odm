@@ -57,7 +57,7 @@ mongoDriver.setUp({
 });
 ```
 
-## Persist Data
+### Persist Data
 
 ```js
 const user = new User({
