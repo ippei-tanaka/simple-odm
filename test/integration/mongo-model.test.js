@@ -38,11 +38,6 @@ describe('mongo-model', function ()
                 {
                     return schema;
                 };
-
-                static get dbOperator ()
-                {
-                    return modelDbOperator;
-                };
             }
 
             let users = yield User.findMany();
@@ -86,11 +81,6 @@ describe('mongo-model', function ()
                 static get schema ()
                 {
                     return schema;
-                };
-
-                static get dbOperator ()
-                {
-                    return modelDbOperator;
                 };
             }
 
@@ -141,12 +131,6 @@ describe('mongo-model', function ()
                 {
                     return schema;
                 };
-
-                static get dbOperator ()
-                {
-                    return modelDbOperator;
-                };
-
             }
 
 
