@@ -18,9 +18,9 @@ const createIdQuery = (key, id) => id ? {[key]: id} : null;
 
 const isObject = a => typeof a === 'object' && a !== null;
 
-const generateRefinedValues = ({schema, values}) => co(function* ()
+const generateFormattedValues = ({schema, values}) => co(function* ()
 {
-    let obj = {};
+    let obj = Object.assign({}, values);
 
     for (let path of schema)
     {
@@ -28,17 +28,39 @@ const generateRefinedValues = ({schema, values}) => co(function* ()
 
         try
         {
-            obj[path.name] = yield pathFunctions.getRefinedValue({path, value});
-        } catch (e)
-        {}
+            obj[path.name] = yield pathFunctions.getFormattedValue({path, value});
+        }
+        catch (e)
+        {
+            obj[path.name] = undefined;
+        }
     }
 
     return obj;
 });
 
+const findDifference = (obj1, obj2) =>
+{
+    const obj = {};
+
+    for (const key of Object.keys(obj1))
+    {
+        const value1 = obj1[key];
+        const value2 = obj2[key];
+
+        if (value1 !== value2)
+        {
+            obj[key] = value2;
+        }
+    }
+
+    return obj;
+};
+
 export default Object.freeze({
     inspectErrors,
     createIdQuery,
     isObject,
-    generateRefinedValues
+    generateFormattedValues,
+    findDifference
 });

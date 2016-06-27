@@ -168,14 +168,12 @@ describe('model', function ()
                 }
             });
 
-            EventHub.on(schema.BEFORE_SAVED, model =>
+            EventHub.on(schema.BEFORE_SAVED, ({values}) =>
             {
-                model.addOverriddenValues({
-                    email: model.getValues().email + "?",
-                    age: 20
-                });
+                values.age = 20;
+                values.email += "?";
+                return {values};
             });
-
 
             class User extends Model {
 
@@ -202,8 +200,8 @@ describe('model', function ()
             }
 
             expect(error).to.be.an('undefined');
-            expect(model.getValues().email).to.equal("test?");
-            expect(model.getValues().age).to.equal(20);
+            expect(model.values.email).to.equal("test?");
+            expect(model.values.age).to.equal(20);
 
             done();
 
@@ -213,7 +211,7 @@ describe('model', function ()
         });
     });
 
-    it('should let BEFORE_SAVE hook modify the error messages.', (done) =>
+    it('should let BEFORE_SAVE hook modify the values and error messages.', (done) =>
     {
         co(function* ()
         {
@@ -221,39 +219,41 @@ describe('model', function ()
                 name: 'user',
                 paths: {
                     email: {
-                        required: true
+                        required: true,
+                        validate: function* (v)
+                        {
+                            if (!validator.isEmail(v))
+                            {
+                                yield `"${v}" is not a valid email.`;
+                            }
+                        }
                     }
                 }
             });
 
-            EventHub.on(schema.BEFORE_SAVED, model =>
+            EventHub.on(schema.BEFORE_SAVED, ({errors}) =>
             {
-                model.setOverriddenErrors(Object.assign({}, model.getErrors(), {
-                    fake_password: ["Boo!"]
-                }));
+                errors.fake_password = ["Boo!"];
+                return {errors};
             });
 
-            EventHub.on(schema.BEFORE_SAVED, model => new Promise((resolve) =>
+            EventHub.on(schema.BEFORE_SAVED, ({errors}) => new Promise((resolve) =>
             {
                 setTimeout(() =>
                 {
-                    model.setOverriddenErrors(Object.assign({}, model.getErrors(), {
-                        fake_email: ["Oh, no!", "You added something new!"]
-                    }));
-                    resolve();
+                    errors.fake_email = ["Oh, no!", "You added something new!"];
+                    resolve({errors});
                 }, 100);
             }));
 
-            EventHub.on(schema.BEFORE_SAVED, model => co(function* ()
+            EventHub.on(schema.BEFORE_SAVED, ({errors}) => co(function* ()
             {
                 yield new Promise((resolve) =>
                 {
                     setTimeout(() =>
                     {
-                        model.addOverriddenErrors({
-                            fake_age: ["Ho ho!"]
-                        });
-                        resolve();
+                        errors.fake_age = ["Ho ho!"];
+                        resolve({errors});
                     }, 100);
                 });
             }));
@@ -283,6 +283,7 @@ describe('model', function ()
                 error = e;
             }
 
+            expect(error.email[0]).to.equal('"test" is not a valid email.');
             expect(error.fake_email[0]).to.equal("Oh, no!");
             expect(error.fake_email[1]).to.equal("You added something new!");
             expect(error.fake_password[0]).to.equal("Boo!");

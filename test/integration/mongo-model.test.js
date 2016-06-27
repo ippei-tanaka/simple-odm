@@ -58,7 +58,60 @@ describe('mongo-model', function ()
             users = yield User.findMany();
 
             expect(users.length).to.equal(1);
-            expect(users[0].getValues().email).to.equal("test");
+            expect(users[0].values.email).to.equal("test");
+
+            done();
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
+
+    it('should update a model.', (done) =>
+    {
+        co(function* ()
+        {
+
+            const schema = new MongoSchema({
+                name: 'user',
+                paths: {
+                    email: {
+                        required: true
+                    }
+                }
+            });
+
+            class User extends MongoModel {
+
+                static get schema ()
+                {
+                    return schema;
+                };
+
+                static get dbOperator ()
+                {
+                    return modelDbOperator;
+                };
+            }
+
+            const model = new User({
+                email: "test"
+            });
+
+            yield model.save();
+
+            let users = yield User.findMany();
+
+            expect(users.length).to.equal(1);
+            expect(users[0].values.email).to.equal("test");
+
+            users[0].values.email = "Lovely";
+            yield users[0].save();
+
+            users = yield User.findMany();
+
+            expect(users.length).to.equal(1);
+            expect(users[0].values.email).to.equal("Lovely");
 
             done();
         }).catch((e) =>
@@ -96,6 +149,7 @@ describe('mongo-model', function ()
 
             }
 
+
             const model = new User({
                 email: "test"
             });
@@ -105,6 +159,23 @@ describe('mongo-model', function ()
             const info = yield modelDbOperator.getIndexInfo({schema});
 
             expect(info.filter(v => v.key.email === 1 && v.unique === true).length).to.equal(1);
+
+
+            let error;
+
+            const model2 = new User({
+                email: "test"
+            });
+
+            try
+            {
+                yield model2.save();
+            } catch (e)
+            {
+                error = e || null;
+            }
+
+            expect(error).not.to.be.an('undefined');
 
             done();
         }).catch((e) =>

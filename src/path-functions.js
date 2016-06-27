@@ -68,10 +68,10 @@ const inspectErrors = ({path, value, updated}) =>
  * @param value {*}
  * @returns {Promise.<*>}
  */
-const getRefinedValue = ({path, value}) =>
+const getFormattedValue = ({path, value}) =>
     co(function* ()
     {
         return path.sanitizer(typeFunctions.convertTo(value, path.type));
     });
 
-export default {inspectErrors, getRefinedValue};
+export default {inspectErrors, getFormattedValue};
