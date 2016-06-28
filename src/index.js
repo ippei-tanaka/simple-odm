@@ -1,7 +1,9 @@
 export { default as mongoDriver } from './mongo/mongo-driver';
 export { default as mongoDbOperatorBuilder } from './mongo/mongo-db-operator-builder';
-export { default as mongoBaseDbOperations } from './mongo/mongo-base-db-operations';
-export { default as mongoModelDbOperations } from './mongo/mongo-model-db-operations';
+export { default as mongoDbBaseOperations } from './mongo/mongo-db-base-operations';
+export { default as mongoDbModelOperations } from './mongo/mongo-db-model-operations';
+export { default as mongoDbBaseOperator } from './mongo/mongo-db-base-operator';
+export { default as mongoDbModelOperator } from './mongo/mongo-db-model-operator';
 export { default as MongoSchema } from './mongo/mongo-schema';
 export { default as MongoModel } from './mongo/mongo-model';
 export { default as types } from './types';

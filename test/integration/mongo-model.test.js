@@ -1,20 +1,17 @@
 import co from 'co';
 import { expect } from 'chai';
 import mongoDriver from '../../src/mongo/mongo-driver';
-import mongoDbOperatorBuilder from '../../src/mongo/mongo-db-operator-builder';
-import mongoBaseDbOperations from '../../src/mongo/mongo-base-db-operations';
-import mongoModelDbOperations from '../../src/mongo/mongo-model-db-operations';
+import mongoDbBaseOperator from '../../src/mongo/mongo-db-base-operator';
+import mongoDbModelOperator from '../../src/mongo/mongo-db-model-operator';
 import MongoSchema from '../../src/mongo/mongo-schema';
 import MongoModel from '../../src/mongo/mongo-model';
 
 const DB_NAME = "simple-odm";
-const dbOperator = mongoDbOperatorBuilder(mongoDriver, mongoBaseDbOperations);
-const modelDbOperator = mongoDbOperatorBuilder(mongoDriver, mongoModelDbOperations);
 
 describe('mongo-model', function ()
 {
     beforeEach(() => mongoDriver.setUp({database: DB_NAME}));
-    beforeEach(dbOperator.dropDatabase);
+    beforeEach(mongoDbBaseOperator.dropDatabase);
 
     this.timeout(10000);
 
@@ -156,7 +153,7 @@ describe('mongo-model', function ()
 
             yield model.save();
 
-            const info = yield modelDbOperator.getIndexInfo({schema});
+            const info = yield mongoDbModelOperator.getIndexInfo({schema});
 
             expect(info.filter(v => v.key.email === 1 && v.unique === true).length).to.equal(1);
 
