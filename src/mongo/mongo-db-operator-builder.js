@@ -23,5 +23,5 @@ export default (mongoDriver, originalOperations) =>
         });
     }
 
-    return operations;
+    return Object.freeze(operations);
 };

@@ -1,11 +1,5 @@
 import Model from './../model';
-import mongoDriver from './mongo-driver';
-import mongoModelDbOperations from './mongo-model-db-operations';
-import mongoDbOperatorBuilder from './mongo-db-operator-builder';
-import co from 'co';
-import pluralize from 'pluralize';
-
-const operator = mongoDbOperatorBuilder(mongoDriver, mongoModelDbOperations);
+import mongoDbModelOperator from './mongo-db-model-operator';
 
 class MongoModel extends Model {
 
@@ -14,7 +8,7 @@ class MongoModel extends Model {
      */
     static get dbOperator ()
     {
-        return operator;
+        return mongoDbModelOperator;
     }
 
 }
