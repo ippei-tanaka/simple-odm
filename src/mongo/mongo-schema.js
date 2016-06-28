@@ -1,9 +1,9 @@
 import Schema from '../schema';
-import Types from '../../src/types';
+import types from '../../src/types';
 
 const idPath = {
     _id: {
-        type: Types.MongoObjectID,
+        type: types.MongoObjectID,
         required: ['updated']
     }
 };
