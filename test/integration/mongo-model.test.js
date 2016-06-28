@@ -88,20 +88,36 @@ describe('mongo-model', function ()
                 email: "test"
             });
 
+            expect(model.id).to.be.an("undefined");
+            expect(model.values._id).to.be.an("undefined");
+
             yield model.save();
 
-            let users = yield User.findMany();
+            const users = yield User.findMany();
+
+            expect(model.id).not.to.be.an("undefined");
+            expect(model.values._id).not.to.be.an("undefined");
+            expect(model.id).to.equal(model.values._id);
+            expect(users[0].id).to.equal(users[0].values._id);
+            expect(users[0].id.toString()).to.equal(model.id.toString());
+            expect(users[0].values.email).to.equal("test");
 
             expect(users.length).to.equal(1);
-            expect(users[0].values.email).to.equal("test");
 
             users[0].values.email = "Lovely";
             yield users[0].save();
 
-            users = yield User.findMany();
+            const users2 = yield User.findMany();
 
-            expect(users.length).to.equal(1);
+            expect(users[0].id).to.equal(users[0].values._id);
+            expect(users[0].id.toString()).to.equal(model.id.toString());
             expect(users[0].values.email).to.equal("Lovely");
+
+            expect(users2.length).to.equal(1);
+            expect(users2[0].values.email).to.equal("Lovely");
+            expect(users2[0].id).to.equal(users2[0].values._id);
+            expect(users2[0].id.toString()).to.equal(users[0].id.toString());
+            expect(users2[0].id.toString()).to.equal(model.id.toString());
 
             done();
         }).catch((e) =>
