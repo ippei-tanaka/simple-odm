@@ -60,24 +60,14 @@ class Model {
         this._schema = this.constructor.schema;
         this._dbOperator = this.constructor.dbOperator;
 
-        // Set Initial Values
         initialValuesMap.set(this, Object.assign({}, values));
 
-        // Set Mutable Values
-        const _values = Object.assign({}, values);
-
-        // Make id property immutable
-        const primaryPathName = this._schema.primaryPathName;
-
-        if (typeof primaryPathName === "string" && primaryPathName !== "")
-        {
-            Object.defineProperty(_values, primaryPathName, {
-                value: _values[primaryPathName]
-            });
-        }
-
         this._state = {
-            values: _values
+            values: modelFunctions.createValueObjectWithId({
+                values,
+                idPathName: this._schema.primaryPathName,
+                idGetter: function () { return this.id }.bind(this)
+            })
         };
 
         Object.freeze(this);
@@ -86,11 +76,6 @@ class Model {
     get values ()
     {
         return this._state.values;
-    }
-
-    set values (v)
-    {
-        this._state.values = v;
     }
 
     get id ()
@@ -199,6 +184,8 @@ class Model {
 
             // Insert or update the model based on whether it has an ID.
 
+            const newValues = Object.assign({}, finalValues);
+
             if (!id)
             {
                 const { insertedId } = yield dbOperator.insertOne({
@@ -206,9 +193,10 @@ class Model {
                     values: finalValues
                 });
 
-                initialValuesMap.get(this)[schema.primaryPathName] = insertedId;
-
-                this.values = finalValues;
+                if (schema.primaryPathName)
+                {
+                    newValues[schema.primaryPathName] = insertedId;
+                }
             }
             else
             {
@@ -217,9 +205,15 @@ class Model {
                     query: modelFunctions.createIdQuery(schema.primaryPathName, id),
                     values: finalValues
                 });
-
-                this.values = finalValues;
             }
+
+            initialValuesMap.set(this, Object.assign({}, newValues));
+
+            this._state.values = modelFunctions.createValueObjectWithId({
+                values: newValues,
+                idPathName: schema.primaryPathName,
+                idGetter: function () { return this.id }.bind(this)
+            });
 
         }.bind(this));
     }

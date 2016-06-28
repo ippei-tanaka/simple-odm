@@ -14,6 +14,20 @@ const inspectErrors = ({schema, updated, values}) => co(function* ()
     return errorMessages;
 });
 
+const createValueObjectWithId = ({values, idPathName, idGetter}) =>
+{
+    const _values = Object.assign({}, values);
+
+    if (typeof idPathName === "string" && idPathName !== "")
+    {
+        Object.defineProperty(_values, idPathName, {
+            get: idGetter
+        });
+    }
+
+    return _values;
+};
+
 const createIdQuery = (key, id) => id ? {[key]: id} : null;
 
 const isObject = a => typeof a === 'object' && a !== null;
@@ -62,5 +76,6 @@ export default Object.freeze({
     createIdQuery,
     isObject,
     generateFormattedValues,
-    findDifference
+    findDifference,
+    createValueObjectWithId
 });

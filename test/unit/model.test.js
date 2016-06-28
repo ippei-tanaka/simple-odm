@@ -62,7 +62,8 @@ describe('model', function ()
 
             class User extends Model {
 
-                static get schema () {
+                static get schema ()
+                {
                     return schema;
                 }
 
@@ -80,9 +81,12 @@ describe('model', function ()
 
             let error;
 
-            try {
+            try
+            {
                 yield model.save();
-            } catch (e) {
+            }
+            catch (e)
+            {
                 error = e;
             }
 
@@ -122,7 +126,8 @@ describe('model', function ()
 
             class User extends Model {
 
-                static get schema () {
+                static get schema ()
+                {
                     return schema;
                 }
 
@@ -138,9 +143,12 @@ describe('model', function ()
 
             let error;
 
-            try {
+            try
+            {
                 yield model.save();
-            } catch (e) {
+            }
+            catch (e)
+            {
                 error = e;
             }
 
@@ -177,7 +185,8 @@ describe('model', function ()
 
             class User extends Model {
 
-                static get schema () {
+                static get schema ()
+                {
                     return schema;
                 }
 
@@ -193,9 +202,12 @@ describe('model', function ()
 
             let error;
 
-            try {
+            try
+            {
                 yield model.save();
-            } catch (e) {
+            }
+            catch (e)
+            {
                 error = e;
             }
 
@@ -261,7 +273,8 @@ describe('model', function ()
 
             class User extends Model {
 
-                static get schema () {
+                static get schema ()
+                {
                     return schema;
                 }
 
@@ -277,9 +290,12 @@ describe('model', function ()
 
             let error;
 
-            try {
+            try
+            {
                 yield model.save();
-            } catch (e) {
+            }
+            catch (e)
+            {
                 error = e;
             }
 
@@ -296,6 +312,54 @@ describe('model', function ()
         });
     });
 
+    it('should not let the values be replaced.', (done) =>
+    {
+        co(function* ()
+        {
+            const schema = new Schema({
+                name: 'user',
+                paths: {
+                    email: {}
+                }
+            });
+
+            class User extends Model {
+
+                static get schema ()
+                {
+                    return schema;
+                }
+
+                static get dbOperator ()
+                {
+                    return operator;
+                };
+            }
+
+            const model = new User({
+                email: "test"
+            });
+
+            let error;
+
+            try
+            {
+                //noinspection JSUnresolvedVariable
+                model.values = {};
+            }
+            catch (e)
+            {
+                error = e || null;
+            }
+
+            expect(error.message).to.equal('Cannot set property values of [object Object] which has only a getter');
+
+            done();
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
 
     it('should not let the id be modified.', (done) =>
     {
@@ -312,28 +376,14 @@ describe('model', function ()
             const schema = new _Schema({
                 name: 'user',
                 paths: {
-                    email: {
-                        required: true,
-                        validate: function* (v)
-                        {
-                            if (!validator.isEmail(v))
-                            {
-                                yield `"${v}" is not a valid email.`;
-                            }
-                        }
-                    }
+                    email: {}
                 }
-            });
-
-            EventHub.on(schema.BEFORE_SAVED, ({errors, values, initialValues}) =>
-            {
-                errors.fake_password = ["Boo!"];
-                return {errors};
             });
 
             class User extends Model {
 
-                static get schema () {
+                static get schema ()
+                {
                     return schema;
                 }
 
@@ -351,15 +401,17 @@ describe('model', function ()
 
             let error;
 
-            try {
+            try
+            {
                 model.values._my_id_prop = 123;
-            } catch (e) {
+            }
+
+            catch (e)
+            {
                 error = e;
             }
 
-            console.log(model.values._my_id_prop);
-            console.log(error);
-            //expect(error.email[0]).to.equal('"test" is not a valid email.');
+            expect(error.message).to.equal('Cannot set property _my_id_prop of [object Object] which has only a getter');
 
             done();
         }).catch((e) =>
