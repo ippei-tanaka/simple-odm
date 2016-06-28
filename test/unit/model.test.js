@@ -296,4 +296,76 @@ describe('model', function ()
         });
     });
 
+
+    it('should not let the id be modified.', (done) =>
+    {
+        co(function* ()
+        {
+            class _Schema extends Schema {
+
+                get primaryPathName ()
+                {
+                    return "_my_id_prop";
+                }
+            }
+
+            const schema = new _Schema({
+                name: 'user',
+                paths: {
+                    email: {
+                        required: true,
+                        validate: function* (v)
+                        {
+                            if (!validator.isEmail(v))
+                            {
+                                yield `"${v}" is not a valid email.`;
+                            }
+                        }
+                    }
+                }
+            });
+
+            EventHub.on(schema.BEFORE_SAVED, ({errors, values, initialValues}) =>
+            {
+                errors.fake_password = ["Boo!"];
+                return {errors};
+            });
+
+            class User extends Model {
+
+                static get schema () {
+                    return schema;
+                }
+
+                static get dbOperator ()
+                {
+                    return operator;
+                };
+            }
+
+            const model = new User({
+                email: "test"
+            });
+
+            expect(model.values._my_id_prop).to.be.an('undefined');
+
+            let error;
+
+            try {
+                model.values._my_id_prop = 123;
+            } catch (e) {
+                error = e;
+            }
+
+            console.log(model.values._my_id_prop);
+            console.log(error);
+            //expect(error.email[0]).to.equal('"test" is not a valid email.');
+
+            done();
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
+
 });

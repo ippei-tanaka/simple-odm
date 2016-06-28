@@ -59,11 +59,26 @@ class Model {
 
         this._schema = this.constructor.schema;
         this._dbOperator = this.constructor.dbOperator;
-        this._state = {
-            values: Object.assign({}, values)
-        };
 
+        // Set Initial Values
         initialValuesMap.set(this, Object.assign({}, values));
+
+        // Set Mutable Values
+        const _values = Object.assign({}, values);
+
+        // Make id property immutable
+        const primaryPathName = this._schema.primaryPathName;
+
+        if (typeof primaryPathName === "string" && primaryPathName !== "")
+        {
+            Object.defineProperty(_values, primaryPathName, {
+                value: _values[primaryPathName]
+            });
+        }
+
+        this._state = {
+            values: _values
+        };
 
         Object.freeze(this);
     }
@@ -104,6 +119,7 @@ class Model {
                 values: rawValues
             });
 
+
             // Generate values formatted based on the schema
 
             const formattedValues = yield modelFunctions.generateFormattedValues({
@@ -119,7 +135,7 @@ class Model {
             const result = yield EventHub.emit(schema.BEFORE_SAVED, {
                 errors: inspectedErrors,
                 values: formattedValues,
-                initialValues
+                initialValues: Object.freeze(Object.assign({}, initialValues))
             });
 
             // Check returned values
