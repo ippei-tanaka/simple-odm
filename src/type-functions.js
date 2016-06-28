@@ -9,7 +9,8 @@ const checkIfMongoObjectId = (value) =>
     try
     {
         ObjectID(value);
-    } catch (e)
+    }
+    catch (e)
     {
         err = e;
     }
@@ -88,7 +89,11 @@ const convertTo = (value, type) =>
         case types.Boolean:
             return !!value;
         case types.MongoObjectID:
-            return ObjectID(value);
+            if (!ObjectID.isValid(String(value)))
+            {
+                throw new SimpleOdmError(`"${value}" couldn't be converted to ${type}.`);
+            }
+            return ObjectID(String(value));
         case types.UUID:
             if (!UUID_Validate(value))
                 throw new SimpleOdmError(`"${value}" couldn't be converted to ${type}.`);
