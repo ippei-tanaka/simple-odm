@@ -1,5 +1,5 @@
 import Schema from '../schema';
-import types from '../../src/types';
+import types from '../types';
 
 const idPath = {
     _id: {
