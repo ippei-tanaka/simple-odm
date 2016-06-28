@@ -1,7 +1,7 @@
 import { ObjectID } from 'mongodb';
 import UUID_Validate from "uuid-validate";
 import { SimpleOdmError } from './errors';
-import Types from './types';
+import types from './types';
 
 const checkIfMongoObjectId = (value) =>
 {
@@ -21,22 +21,22 @@ const isValidValueAs = (value, type) =>
 
     switch (type)
     {
-        case Types.String:
+        case types.String:
             return typeof value === "string";
 
-        case Types.Integer:
+        case types.Integer:
             return (typeof value === "number" && Number.parseInt(value) === value);
 
-        case Types.Date:
+        case types.Date:
             return value instanceof Date;
 
-        case Types.Boolean:
+        case types.Boolean:
             return typeof value === "boolean";
 
-        case Types.MongoObjectID:
+        case types.MongoObjectID:
             return checkIfMongoObjectId(value);
 
-        case Types.UUID:
+        case types.UUID:
             return UUID_Validate(value);
 
         default:
@@ -73,23 +73,23 @@ const convertTo = (value, type) =>
 {
     switch (type)
     {
-        case Types.String:
+        case types.String:
             return String(value);
-        case Types.Integer:
+        case types.Integer:
             const num = Number.parseInt(value);
             if (Number.isNaN(num))
                 throw new SimpleOdmError(`"${value}" couldn't be converted to ${type}.`);
             return num;
-        case Types.Date:
+        case types.Date:
             const date = new Date(value);
             if (Number.isNaN(date.valueOf()))
                 throw new SimpleOdmError(`"${value}" couldn't be converted to ${type}.`);
             return date;
-        case Types.Boolean:
+        case types.Boolean:
             return !!value;
-        case Types.MongoObjectID:
+        case types.MongoObjectID:
             return ObjectID(value);
-        case Types.UUID:
+        case types.UUID:
             if (!UUID_Validate(value))
                 throw new SimpleOdmError(`"${value}" couldn't be converted to ${type}.`);
             return value;
@@ -124,9 +124,9 @@ const isValidType = (value) =>
 {
     let isType = false;
 
-    for (let key of Object.keys(Types))
+    for (let key of Object.keys(types))
     {
-        if (value === Types[key])
+        if (value === types[key])
         {
             isType = true;
         }
