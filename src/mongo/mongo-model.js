@@ -18,7 +18,6 @@ class MongoModel extends Model {
     }
 
     /**
-     * @override
      * @param query {object}
      * @param sort {object}
      * @param limit {number}
@@ -34,7 +33,6 @@ class MongoModel extends Model {
     }
 
     /**
-     * @override
      * @param query {object}
      */
     static findOne (query = {})
@@ -43,6 +41,28 @@ class MongoModel extends Model {
         {
             const doc = yield this.dbOperator.findOne({schema: this.schema, query});
             return doc ? new this(doc) : null;
+        }.bind(this));
+    }
+
+    /**
+     * @param query {object}
+     */
+    static deleteOne (query = {})
+    {
+        return co(function* ()
+        {
+            yield this.dbOperator.deleteOne({schema: this.schema, query});
+        }.bind(this));
+    }
+
+    /**
+     * @param query {object}
+     */
+    static aggregate (query)
+    {
+        return co(function* ()
+        {
+            return yield this.dbOperator.aggregate({schema: this.schema, query});
         }.bind(this));
     }
 
