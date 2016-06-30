@@ -1,7 +1,7 @@
 import co from 'co';
 import { expect } from 'chai';
 import validator from 'validator';
-import Types from '../../src/types';
+import types from '../../src/types';
 import Schema from '../../src/schema';
 import Model from '../../src/model';
 import EventHub from '../../src/event-hub';
@@ -9,12 +9,40 @@ import EventHub from '../../src/event-hub';
 describe('model', function ()
 {
 
-    const operator = {
-        insertOne: () => Promise.resolve(true),
-        updateOne: () => Promise.resolve(true),
-        getIndexInfo: () => Promise.resolve(true),
-        createUniqueIndex: () => Promise.resolve(true)
-    };
+    it('should have the default value.', (done) =>
+    {
+        co(function* ()
+        {
+            const schema = new Schema({
+                name: 'user',
+                paths: {
+                    age: {
+                        type: types.Integer,
+                        default_value: 20
+                    }
+                }
+            });
+
+            class User extends Model {
+
+                static get schema ()
+                {
+                    return schema;
+                }
+
+            }
+
+            const model = new User({});
+
+            expect(model.values.age).to.equal(20);
+
+            done();
+
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
 
     it('should accept various validate attributes.', (done) =>
     {
@@ -107,7 +135,7 @@ describe('model', function ()
                 name: 'user',
                 paths: {
                     email: {
-                        type: Types.String,
+                        type: types.String,
                         required: true,
                         validate: function* (v)
                         {
@@ -162,7 +190,7 @@ describe('model', function ()
                 name: 'user',
                 paths: {
                     email: {
-                        type: Types.String,
+                        type: types.String,
                         required: true
                     }
                 }

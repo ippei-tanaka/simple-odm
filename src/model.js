@@ -27,7 +27,9 @@ class Model {
 
         this._schema = this.constructor.schema;
 
-        initialValuesMap.set(this, Object.assign({}, values));
+        values = modelFunctions.createValueObjectWithDefaultValues({values, schema: this._schema});
+
+        initialValuesMap.set(this, values);
 
         this._state = {
             values: modelFunctions.createValueObjectWithId({
