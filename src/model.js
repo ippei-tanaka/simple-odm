@@ -1,5 +1,5 @@
 import co from 'co';
-import { SimpleOdmError } from './errors';
+import { SimpleOdmError, SimpleOdmValidationError } from './errors';
 import EventHub from './event-hub';
 import modelFunctions from './model-functions';
 
@@ -93,17 +93,17 @@ class Model {
 
             // Check returned values
 
-            if (typeof resultOfHooks !== 'object' || resultOfHooks === null)
+            if (!modelFunctions.isObject(resultOfHooks))
             {
                 throw new SimpleOdmError("A BEFORE_SAVE hook returns a non-object or null.");
             }
 
-            if (typeof resultOfHooks.errors !== 'object' || resultOfHooks.errors === null)
+            if (!modelFunctions.isObject(resultOfHooks.errors))
             {
                 throw new SimpleOdmError("A BEFORE_SAVE hooks returns an object with the invalid errors property.");
             }
 
-            if (typeof resultOfHooks.values !== 'object' || resultOfHooks.values === null)
+            if (!modelFunctions.isObject(resultOfHooks.values))
             {
                 throw new SimpleOdmError("A BEFORE_SAVE hooks returns an object with the invalid values property.");
             }
@@ -112,13 +112,35 @@ class Model {
 
             if (Object.keys(resultOfHooks.errors).filter(key => resultOfHooks.errors[key].length > 0).length > 0)
             {
-                throw resultOfHooks.errors;
+                throw new SimpleOdmValidationError(resultOfHooks.errors);
             }
 
             const resultOfSave = yield this._save({
                 errors: resultOfHooks.errors,
                 values: resultOfHooks.values
             });
+
+            // Throw errors if they exist.
+
+            if (Object.keys(resultOfSave.errors).filter(key => resultOfSave.errors[key].length > 0).length > 0)
+            {
+                throw new SimpleOdmValidationError(resultOfSave.errors);
+            }
+
+            if (!modelFunctions.isObject(resultOfSave))
+            {
+                throw new SimpleOdmError("A _save() returns a non-object or null.");
+            }
+
+            if (!modelFunctions.isObject(resultOfSave.errors))
+            {
+                throw new SimpleOdmError("A _save() returns an object with the invalid errors property.");
+            }
+
+            if (!modelFunctions.isObject(resultOfSave.values))
+            {
+                throw new SimpleOdmError("A _save() returns an object with the invalid values property.");
+            }
 
             initialValuesMap.set(this, Object.assign({}, resultOfSave.values));
 

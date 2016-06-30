@@ -1,18 +1,23 @@
 class ExtendableError extends Error {
-    constructor(message) {
+    constructor (message)
+    {
         super(message);
 
         this.name = this.constructor.name;
         this.message = message;
 
-        if (typeof Error.captureStackTrace === 'function') {
+        if (typeof Error.captureStackTrace === 'function')
+        {
             Error.captureStackTrace(this, this.constructor);
-        } else {
+        }
+        else
+        {
             this.stack = (new Error(message)).stack;
         }
     }
 
-    toJSON() {
+    toJSON ()
+    {
         return {
             name: this.name,
             message: this.message
@@ -21,7 +26,17 @@ class ExtendableError extends Error {
 }
 
 export class SimpleOdmError extends ExtendableError {
-    constructor(message) {
+    constructor (message)
+    {
         super(message);
     }
+}
+
+export class SimpleOdmValidationError extends ExtendableError  {
+
+    constructor (map)
+    {
+        super(map);
+    }
+
 }

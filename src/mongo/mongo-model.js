@@ -156,7 +156,10 @@ class MongoModel extends Model {
                 newError = {[pathName]: [schema.paths[pathName].uniqueErrorMessageBuilder(value)]};
             }
 
-            throw Object.assign({}, errors, newError);
+            return {
+                errors: Object.assign({}, errors, newError),
+                values
+            };
 
         }.bind(this));
     }
