@@ -14,6 +14,23 @@ const inspectErrors = ({schema, updated, values}) => co(function* ()
     return errorMessages;
 });
 
+const createValueObjectWithDefaultValues = ({values, schema}) =>
+{
+    let _values = Object.assign({}, values);
+
+    for (let path of schema)
+    {
+        const value = values[path.name];
+
+        if (value === undefined)
+        {
+            _values[path.name] = path.defaultValue;
+        }
+    }
+
+    return _values;
+};
+
 const createValueObjectWithId = ({values, idPathName, idGetter}) =>
 {
     const _values = Object.assign({}, values);
@@ -105,5 +122,6 @@ export default Object.freeze({
     compactErrors,
     generateFormattedValues,
     findDifference,
-    createValueObjectWithId
+    createValueObjectWithId,
+    createValueObjectWithDefaultValues
 });
