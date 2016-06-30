@@ -10,7 +10,7 @@ export { default as types } from './types';
 export { default as Type } from './type';
 export { default as typeFunctions } from './type-functions';
 export { default as eventHub } from './event-hub';
-export { SimpleOdmError } from './errors';
+export { SimpleOdmError, SimpleOdmValidationError } from './errors';
 export { default as Model } from './model';
 export { default as modelFunctions } from './model-functions';
 export { default as Schema } from './schema';
