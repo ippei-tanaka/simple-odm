@@ -28,8 +28,6 @@ const createValueObjectWithId = ({values, idPathName, idGetter}) =>
     return _values;
 };
 
-const createIdQuery = (key, id) => id ? {[key]: id} : null;
-
 const isObject = a => typeof a === 'object' && a !== null;
 
 const generateFormattedValues = ({schema, values}) => co(function* ()
@@ -73,7 +71,6 @@ const findDifference = (obj1, obj2) =>
 
 export default Object.freeze({
     inspectErrors,
-    createIdQuery,
     isObject,
     generateFormattedValues,
     findDifference,

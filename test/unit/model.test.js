@@ -67,10 +67,6 @@ describe('model', function ()
                     return schema;
                 }
 
-                static get dbOperator ()
-                {
-                    return operator;
-                };
             }
 
             const model = new User({
@@ -131,10 +127,6 @@ describe('model', function ()
                     return schema;
                 }
 
-                static get dbOperator ()
-                {
-                    return operator;
-                };
             }
 
             const model = new User({
@@ -190,10 +182,6 @@ describe('model', function ()
                     return schema;
                 }
 
-                static get dbOperator ()
-                {
-                    return operator;
-                };
             }
 
             const model = new User({
@@ -278,10 +266,6 @@ describe('model', function ()
                     return schema;
                 }
 
-                static get dbOperator ()
-                {
-                    return operator;
-                };
             }
 
             const model = new User({
@@ -330,10 +314,6 @@ describe('model', function ()
                     return schema;
                 }
 
-                static get dbOperator ()
-                {
-                    return operator;
-                };
             }
 
             const model = new User({
@@ -387,10 +367,6 @@ describe('model', function ()
                     return schema;
                 }
 
-                static get dbOperator ()
-                {
-                    return operator;
-                };
             }
 
             const model = new User({

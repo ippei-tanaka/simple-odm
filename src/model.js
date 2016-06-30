@@ -7,11 +7,6 @@ const initialValuesMap = new WeakMap();
 
 class Model {
 
-    static get dbOperator ()
-    {
-        throw new SimpleOdmError("Implement dbOperator")
-    }
-
     /**
      * @member {Schema}
      */
@@ -19,33 +14,6 @@ class Model {
     {
         throw new SimpleOdmError("Implement schema")
     };
-
-    /**
-     * @param query {object}
-     * @param sort {object}
-     * @param limit {number}
-     * @param skip {number}
-     */
-    static findMany ({query = {}, sort = {}, limit = 0, skip = 0} = {})
-    {
-        return co(function* ()
-        {
-            const docs = yield this.dbOperator.findMany({schema: this.schema, query, sort, limit, skip});
-            return docs.map(doc => new this(doc));
-        }.bind(this));
-    }
-
-    /**
-     * @param query {object}
-     */
-    static findOne (query = {})
-    {
-        return co(function* ()
-        {
-            const doc = yield this.dbOperator.findOne({schema: this.schema, query});
-            return doc ? new this(doc) : null;
-        }.bind(this));
-    }
 
     /**
      * @param values {object}
@@ -58,7 +26,6 @@ class Model {
         }
 
         this._schema = this.constructor.schema;
-        this._dbOperator = this.constructor.dbOperator;
 
         initialValuesMap.set(this, Object.assign({}, values));
 
@@ -69,8 +36,6 @@ class Model {
                 idGetter: function () { return this.id }.bind(this)
             })
         };
-
-        Object.freeze(this);
     }
 
     get values ()
@@ -83,14 +48,17 @@ class Model {
         return initialValuesMap.get(this)[this._schema.primaryPathName];
     }
 
+    toJSON ()
+    {
+        return JSON.parse(JSON.stringify(this._state.values));
+    }
+
     save ()
     {
-        const dbOperator = this._dbOperator;
         const schema = this._schema;
         const id = this.id;
         const initialValues = initialValuesMap.get(this);
         const rawValues = this.values;
-        //const updatedValues = modelFunctions.findDifference(initialValues, rawValues);
 
         return co(function* ()
         {
@@ -117,105 +85,55 @@ class Model {
             // Listeners of this event are given the model.
             // They may modify given errors or values and return them.
 
-            const result = yield EventHub.emit(schema.BEFORE_SAVED, {
-                errors: inspectedErrors,
-                values: formattedValues,
+            const resultOfHooks = yield EventHub.emit(schema.BEFORE_SAVED, {
+                errors: Object.freeze(Object.assign({}, inspectedErrors)),
+                values: Object.freeze(Object.assign({}, formattedValues)),
                 initialValues: Object.freeze(Object.assign({}, initialValues))
             });
 
             // Check returned values
 
-            if (typeof result !== 'object' || result === null)
+            if (typeof resultOfHooks !== 'object' || resultOfHooks === null)
             {
                 throw new SimpleOdmError("A BEFORE_SAVE hook returns a non-object or null.");
             }
 
-            if (typeof result.errors !== 'object' || result.errors === null)
+            if (typeof resultOfHooks.errors !== 'object' || resultOfHooks.errors === null)
             {
                 throw new SimpleOdmError("A BEFORE_SAVE hooks returns an object with the invalid errors property.");
             }
 
-            if (typeof result.values !== 'object' || result.values === null)
+            if (typeof resultOfHooks.values !== 'object' || resultOfHooks.values === null)
             {
                 throw new SimpleOdmError("A BEFORE_SAVE hooks returns an object with the invalid values property.");
             }
 
             // Throw errors if they exist.
 
-            if (Object.keys(result.errors).filter(key => result.errors[key].length > 0).length > 0)
+            if (Object.keys(resultOfHooks.errors).filter(key => resultOfHooks.errors[key].length > 0).length > 0)
             {
-                throw result.errors;
+                throw resultOfHooks.errors;
             }
 
-            // Assign final values
+            const resultOfSave = yield this._save({
+                errors: resultOfHooks.errors,
+                values: resultOfHooks.values
+            });
 
-            const finalValues = result.values;
-
-            // Create unique indexes if they don't exist.
-
-            {
-                let info = null;
-
-                try
-                {
-                    info = yield dbOperator.getIndexInfo({schema});
-                }
-                catch (e)
-                {}
-
-                for (let path of schema)
-                {
-                    if (!path.isUnique)
-                    {
-                        continue;
-                    }
-
-                    const hasUniqueIndex = info === null
-                        ? false
-                        : info.filter(v => v.key[path.name] === 1 && v.unique === true).length > 0;
-
-                    if (!hasUniqueIndex)
-                    {
-                        yield dbOperator.createUniqueIndex({schema, pathName: path.name});
-                    }
-                }
-            }
-
-
-            // Insert or update the model based on whether it has an ID.
-
-            const newValues = Object.assign({}, finalValues);
-
-            if (!id)
-            {
-                const { insertedId } = yield dbOperator.insertOne({
-                    schema,
-                    values: finalValues
-                });
-
-                if (schema.primaryPathName)
-                {
-                    newValues[schema.primaryPathName] = insertedId;
-                }
-            }
-            else
-            {
-                yield dbOperator.updateOne({
-                    schema,
-                    query: modelFunctions.createIdQuery(schema.primaryPathName, id),
-                    values: finalValues
-                });
-            }
-
-            initialValuesMap.set(this, Object.assign({}, newValues));
+            initialValuesMap.set(this, Object.assign({}, resultOfSave.values));
 
             this._state.values = modelFunctions.createValueObjectWithId({
-                values: newValues,
+                values: Object.assign({}, resultOfSave.values),
                 idPathName: schema.primaryPathName,
                 idGetter: function () { return this.id }.bind(this)
             });
 
         }.bind(this));
+    }
+
+    _save ({errors, values})
+    {
+        return Promise.resolve({errors, values});
     }
 
 }
