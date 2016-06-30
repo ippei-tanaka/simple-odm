@@ -1,5 +1,6 @@
 import co from 'co';
 import Model from './../model';
+import { MongoError } from 'mongodb';
 import mongoDbModelOperator from './mongo-db-model-operator';
 
 const createIdQuery = (key, id) => id ? {[key]: id} : null;
@@ -62,7 +63,8 @@ class MongoModel extends Model {
         const schema = this._schema;
         const id = this.id;
 
-        return co(function* () {
+        return co(function* ()
+        {
 
             // Create unique indexes if they don't exist.
 
@@ -103,7 +105,7 @@ class MongoModel extends Model {
             {
                 const { insertedId } = yield dbOperator.insertOne({
                     schema,
-                    values: values
+                    values
                 });
 
                 if (schema.primaryPathName)
@@ -116,13 +118,27 @@ class MongoModel extends Model {
                 yield dbOperator.updateOne({
                     schema,
                     query: createIdQuery(schema.primaryPathName, id),
-                    values: values
+                    values
                 });
             }
 
             return {errors, values};
 
-        });
+        }).catch(function (error)
+        {
+            let newError = {};
+
+            if (error instanceof MongoError && error.code === 11000)
+            {
+                const match = error.message.match(/\$([\w]+)_\d+\s.+\{.+:\s"(.+)"\s\}/);
+                const pathName = match[1];
+                const value = match[2];
+                newError = {[pathName]: [schema.paths[pathName].uniqueErrorMessageBuilder(value)]};
+            }
+
+            throw Object.assign({}, errors, newError);
+
+        }.bind(this));
     }
 
 }

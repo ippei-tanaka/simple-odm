@@ -173,9 +173,10 @@ describe('mongo-model', function ()
                 error = e || null;
             }
 
-            expect(error).not.to.be.an('undefined');
+            expect(error.email[0]).to.equal('The email, "test", has already been taken.');
 
             done();
+
         }).catch((e) =>
         {
             done(e);
