@@ -80,7 +80,6 @@ class Model {
                 values: rawValues
             });
 
-
             // Invoke the before save event.
             // Listeners of this event are given the model.
             // They may modify given errors or values and return them.
@@ -110,9 +109,9 @@ class Model {
 
             // Throw errors if they exist.
 
-            if (Object.keys(resultOfHooks.errors).filter(key => resultOfHooks.errors[key].length > 0).length > 0)
+            if (!modelFunctions.AreErrorsEmpty(resultOfHooks.errors))
             {
-                throw new SimpleOdmValidationError(resultOfHooks.errors);
+                throw new SimpleOdmValidationError(modelFunctions.compactErrors(resultOfHooks.errors));
             }
 
             const resultOfSave = yield this._save({
@@ -122,9 +121,9 @@ class Model {
 
             // Throw errors if they exist.
 
-            if (Object.keys(resultOfSave.errors).filter(key => resultOfSave.errors[key].length > 0).length > 0)
+            if (!modelFunctions.AreErrorsEmpty(resultOfSave.errors))
             {
-                throw new SimpleOdmValidationError(resultOfSave.errors);
+                throw new SimpleOdmValidationError(modelFunctions.compactErrors(resultOfSave.errors));
             }
 
             if (!modelFunctions.isObject(resultOfSave))
