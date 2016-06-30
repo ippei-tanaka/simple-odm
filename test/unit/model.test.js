@@ -86,10 +86,10 @@ describe('model', function ()
                 error = e;
             }
 
-            expect(error.email[0]).to.equal('"test" is not a valid email.');
-            expect(error.age[0]).to.equal('"a" is not a number.');
-            expect(error.gender[0]).to.equal('Gender is not binary, though.');
-            expect(error.gender[1]).to.equal('"2" is not a boolean.');
+            expect(error.message.email[0]).to.equal('"test" is not a valid email.');
+            expect(error.message.age[0]).to.equal('"a" is not a number.');
+            expect(error.message.gender[0]).to.equal('Gender is not binary, though.');
+            expect(error.message.gender[1]).to.equal('"2" is not a boolean.');
 
             done();
 
@@ -144,7 +144,7 @@ describe('model', function ()
                 error = e;
             }
 
-            expect(error.email[0]).to.equal('"test" is not a valid email.');
+            expect(error.message.email[0]).to.equal('"test" is not a valid email.');
 
             done();
 
@@ -283,11 +283,11 @@ describe('model', function ()
                 error = e;
             }
 
-            expect(error.email[0]).to.equal('"test" is not a valid email.');
-            expect(error.fake_email[0]).to.equal("Oh, no!");
-            expect(error.fake_email[1]).to.equal("You added something new!");
-            expect(error.fake_password[0]).to.equal("Boo!");
-            expect(error.fake_age[0]).to.equal("Ho ho!");
+            expect(error.message.email[0]).to.equal('"test" is not a valid email.');
+            expect(error.message.fake_email[0]).to.equal("Oh, no!");
+            expect(error.message.fake_email[1]).to.equal("You added something new!");
+            expect(error.message.fake_password[0]).to.equal("Boo!");
+            expect(error.message.fake_age[0]).to.equal("Ho ho!");
 
             done();
         }).catch((e) =>

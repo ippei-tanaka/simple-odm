@@ -72,6 +72,11 @@ const isValidValueAs = (value, type) =>
 
 const convertTo = (value, type) =>
 {
+    if (value === undefined || value === null)
+    {
+        return value;
+    }
+
     switch (type)
     {
         case types.String:
@@ -109,7 +114,7 @@ const convertTo = (value, type) =>
 
         return value.map((i) => convertTo(i, type[0]));
     }
-    else if (typeof type === "object" && type !== null)
+    else if (typeof type === "object")
     {
         const obj = {};
         for (let key of Object.keys(type))
@@ -122,7 +127,7 @@ const convertTo = (value, type) =>
         return obj;
     }
 
-    return value
+    return value;
 };
 
 const isValidType = (value) =>

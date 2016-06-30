@@ -224,7 +224,7 @@ describe('mongo-model', function ()
                 error = e || null;
             }
 
-            expect(error.email[0]).to.equal('The email, "test", has already been taken.');
+            expect(error.message.email[0]).to.equal('The email, "test", has already been taken.');
 
             done();
 

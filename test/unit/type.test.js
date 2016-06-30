@@ -73,6 +73,8 @@ describe('type', function () {
                 expect(typeFunctions.convertTo(123)).to.equal(123);
                 expect(typeFunctions.convertTo(null)).to.equal(null);
                 expect(typeFunctions.convertTo(0, Types.String)).to.equal("0");
+                expect(typeFunctions.convertTo(null, Types.String)).to.equal(null);
+                expect(typeFunctions.convertTo(undefined, Types.String)).to.equal(undefined);
                 expect(typeFunctions.convertTo("5.6", Types.Integer)).to.equal(5);
                 expect(typeFunctions.convertTo([1, 2, 3], [Types.String])[1]).to.equal("2");
                 expect(typeFunctions.convertTo({s: 1, i: "5"}, {s: Types.String, i: Types.Integer}).s).to.equal("1");

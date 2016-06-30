@@ -28,6 +28,9 @@ const createValueObjectWithId = ({values, idPathName, idGetter}) =>
     return _values;
 };
 
+/**
+ * @return {boolean}
+ */
 const isObject = a => typeof a === 'object' && a !== null;
 
 const generateFormattedValues = ({schema, values}) => co(function* ()
@@ -51,6 +54,32 @@ const generateFormattedValues = ({schema, values}) => co(function* ()
     return obj;
 });
 
+/**
+ * @return {boolean}
+ */
+const AreErrorsEmpty = (errors) =>
+{
+    return Object.keys(errors)
+                 .filter(key => errors[key].length > 0).length === 0;
+};
+
+const compactErrors = (errors) =>
+{
+    const _errors = {};
+
+    for (const key of Object.keys(errors))
+    {
+        const error = errors[key];
+
+        if (error.length > 0)
+        {
+            _errors[key] = error;
+        }
+    }
+
+    return _errors;
+};
+
 const findDifference = (obj1, obj2) =>
 {
     const obj = {};
@@ -72,6 +101,8 @@ const findDifference = (obj1, obj2) =>
 export default Object.freeze({
     inspectErrors,
     isObject,
+    AreErrorsEmpty,
+    compactErrors,
     generateFormattedValues,
     findDifference,
     createValueObjectWithId
