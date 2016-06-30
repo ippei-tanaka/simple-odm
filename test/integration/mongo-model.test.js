@@ -6,6 +6,7 @@ import mongoDbModelOperator from '../../src/mongo/mongo-db-model-operator';
 import MongoSchema from '../../src/mongo/mongo-schema';
 import MongoModel from '../../src/mongo/mongo-model';
 import types from '../../src/types';
+import { ObjectID } from 'mongodb';
 
 const DB_NAME = "simple-odm";
 
@@ -116,6 +117,56 @@ describe('mongo-model', function ()
             expect(users2[0].id).to.equal(users2[0].values._id);
             expect(users2[0].id.toString()).to.equal(users[0].id.toString());
             expect(users2[0].id.toString()).to.equal(model.id.toString());
+
+            done();
+        }).catch((e) =>
+        {
+            done(e);
+        });
+    });
+
+    it('should delete a model.', (done) =>
+    {
+        co(function* ()
+        {
+
+            const schema = new MongoSchema({
+                name: 'user',
+                paths: {
+                    email: {}
+                }
+            });
+
+            class User extends MongoModel {
+
+                static get schema ()
+                {
+                    return schema;
+                };
+            }
+
+            const users1 = yield User.findMany();
+
+            expect(users1.length).to.equal(0);
+
+            const model = new User({
+                email: "test"
+            });
+
+            expect(model.id).to.be.an("undefined");
+            expect(model.values._id).to.be.an("undefined");
+
+            yield model.save();
+
+            const users2 = yield User.findMany();
+
+            expect(users2.length).to.equal(1);
+
+            yield User.deleteOne({_id: new ObjectID(users2[0].id)});
+
+            const users3 = yield User.findMany();
+
+            expect(users3.length).to.equal(0);
 
             done();
         }).catch((e) =>
