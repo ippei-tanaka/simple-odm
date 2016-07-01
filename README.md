@@ -2,9 +2,6 @@
 
 Simple ODM is an object-document mapper for NoSQL databases. It only supports MongoDB now.
 
-### Version
-0.1.0 (pre-alpha)
-
 ### Instrallation
 
 To install Simple ODM:
