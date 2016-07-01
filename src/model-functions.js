@@ -71,15 +71,6 @@ const generateFormattedValues = ({schema, values}) => co(function* ()
     return obj;
 });
 
-/**
- * @return {boolean}
- */
-const AreErrorsEmpty = (errors) =>
-{
-    return Object.keys(errors)
-                 .filter(key => errors[key].length > 0).length === 0;
-};
-
 const compactErrors = (errors) =>
 {
     const _errors = {};
@@ -118,7 +109,6 @@ const findDifference = (obj1, obj2) =>
 export default Object.freeze({
     inspectErrors,
     isObject,
-    AreErrorsEmpty,
     compactErrors,
     generateFormattedValues,
     findDifference,
