@@ -40,6 +40,7 @@
     "deepcopy": "^0.6.3",
     "immutable": "^3.8.1",
     "mongodb": "^2.1.18",
-    "pluralize": "^3.0.0"
+    "pluralize": "^3.0.0",
+    "uuid-validate": "0.0.2"
   }
 }
