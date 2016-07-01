@@ -87,7 +87,7 @@ class Model {
             // They may modify given errors or values and return them.
 
             const resultOfHooks = yield EventHub.emit(schema.BEFORE_SAVED, {
-                errors: Object.freeze(Object.assign({}, inspectedErrors)),
+                errors: Object.freeze(modelFunctions.compactErrors(inspectedErrors)),
                 values: Object.freeze(Object.assign({}, formattedValues)),
                 initialValues: Object.freeze(Object.assign({}, initialValues))
             });
@@ -111,9 +111,11 @@ class Model {
 
             // Throw errors if they exist.
 
-            if (!modelFunctions.AreErrorsEmpty(resultOfHooks.errors))
+            resultOfHooks.errors = modelFunctions.compactErrors(resultOfHooks.errors);
+
+            if (Object.keys(resultOfHooks.errors).length > 0)
             {
-                throw new SimpleOdmValidationError(modelFunctions.compactErrors(resultOfHooks.errors));
+                throw new SimpleOdmValidationError(resultOfHooks.errors);
             }
 
             const resultOfSave = yield this._save({
@@ -123,9 +125,11 @@ class Model {
 
             // Throw errors if they exist.
 
-            if (!modelFunctions.AreErrorsEmpty(resultOfSave.errors))
+            resultOfSave.errors = modelFunctions.compactErrors(resultOfSave.errors);
+
+            if (Object.keys(resultOfSave.errors).length > 0)
             {
-                throw new SimpleOdmValidationError(modelFunctions.compactErrors(resultOfSave.errors));
+                throw new SimpleOdmValidationError(resultOfSave.errors);
             }
 
             if (!modelFunctions.isObject(resultOfSave))
