@@ -1,0 +1,36 @@
+{
+    "source": {
+        "include": [],
+        "exclude": [],
+        "includePattern": ".+\\.js(doc)?$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+
+    "tags": {
+        "allowUnknownTags" : true
+    },
+
+    "plugins": ["plugins/markdown"],
+
+    "templates": {
+        "cleverLinks": true,
+        "monospaceLinks": true,
+        "default": {
+            "outputSourceFiles" : true
+        },
+        "applicationName": "Simple ODM"
+    },
+
+    "markdown": {
+        "parser": "gfm",
+        "hardwrap": true,
+        "tags": ["examples"]
+    },
+
+    "opts": {
+        "template": "./node_modules/jaguarjs-jsdoc",
+        "encoding": "utf8",
+        "recurse": true,
+        "destination": "./docs/"
+    }
+}

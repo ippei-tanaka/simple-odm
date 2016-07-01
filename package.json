@@ -4,12 +4,16 @@
   "description": "a simple object document mapper",
   "main": "lib/index.js",
   "scripts": {
-    "build": "npm run build:clean && npm run build:src",
-    "build:clean": "./node_modules/.bin/rimraf lib",
-    "build:src": " ./node_modules/.bin/babel src --out-dir lib",
+    "compile": "npm run compile:clean && npm run compile:src",
+    "compile:clean": "./node_modules/.bin/rimraf lib",
+    "compile:src": " ./node_modules/.bin/babel src --out-dir lib",
+    "build-docs": "npm run build-docs:clean && npm run build-docs:docs",
+    "build-docs:clean": "./node_modules/.bin/rimraf docs",
+    "build-docs:docs": " ./node_modules/.bin/jsdoc src -c doc.conf.json -R README.md",
     "test": "./node_modules/.bin/mocha $(find test -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
     "test:unit": "./node_modules/.bin/mocha $(find test/unit -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
-    "test:integration": "./node_modules/.bin/mocha $(find test/integration -name '*.test.js') --compilers js:babel-register --require babel-polyfill"
+    "test:integration": "./node_modules/.bin/mocha $(find test/integration -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
+    "prepublish": "npm run compile"
   },
   "author": {
     "name": "Ippei Tanaka",
@@ -29,9 +33,10 @@
     "babel-register": "^6.9.0",
     "chai": "^3.5.0",
     "co": "^4.6.0",
+    "jaguarjs-jsdoc": "^1.0.0",
+    "jsdoc": "^3.4.0",
     "mocha": "^2.5.3",
     "rimraf": "^2.5.2",
-    "uuid-validate": "0.0.2",
     "validator": "^5.4.0"
   },
   "dependencies": {
