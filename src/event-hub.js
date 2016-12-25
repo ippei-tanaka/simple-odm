@@ -1,7 +1,6 @@
 import co from 'co';
 import EventEmitter from 'events';
 import deepcopy from 'deepcopy';
-import { SimpleOdmError } from './errors';
 
 const emitter = new EventEmitter();
 
@@ -12,7 +11,12 @@ class EventHub {
         return emitter.on.bind(emitter);
     }
 
-    static emit (eventId, argObject)
+    /**
+     * @param {String|Symbol} eventId - the id of the event
+     * @param {Object} [argObject=null] - arguments sent to event listeners
+     * @return {Promise} the promise object that will be resolved when all the listeners of the event are notified
+     */
+    static emit (eventId, argObject = null)
     {
         const listeners = emitter.listeners(eventId);
         let result;
@@ -37,4 +41,6 @@ class EventHub {
     }
 }
 
-export default Object.freeze(EventHub);
+Object.freeze(EventHub);
+
+export default EventHub;
