@@ -4,15 +4,22 @@ import deepcopy from 'deepcopy';
 
 const emitter = new EventEmitter();
 
+/**
+ * A singleton event hub
+ */
 class EventHub {
 
-    static get on ()
+    /**
+     * @param {string|Symbol} eventId - the id of the event
+     * @param {function} listener - an listener that listens to the event
+     */
+    static on (eventId, listener)
     {
-        return emitter.on.bind(emitter);
+        emitter.on(eventId, listener);
     }
 
     /**
-     * @param {String|Symbol} eventId - the id of the event
+     * @param {string|Symbol} eventId - the id of the event
      * @param {Object} [argObject=null] - arguments sent to event listeners
      * @return {Promise} the promise object that will be resolved when all the listeners of the event are notified
      */
