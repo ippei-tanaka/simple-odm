@@ -121,6 +121,9 @@ class MongoModel extends Model {
 
             const newValues = Object.assign({}, values);
 
+            console.log("========== id =========");
+            console.log(id);
+
             if (!id)
             {
                 const { insertedId } = yield dbOperator.insertOne({
@@ -155,6 +158,9 @@ class MongoModel extends Model {
                 const value = match[2];
                 newError = {[pathName]: [schema.paths[pathName].uniqueErrorMessageBuilder(value)]};
             }
+
+            console.log("========== error =========");
+            console.log(error);
 
             return {
                 errors: Object.assign({}, errors, newError),
