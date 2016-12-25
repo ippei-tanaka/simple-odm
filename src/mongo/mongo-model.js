@@ -138,11 +138,16 @@ class MongoModel extends Model {
             }
             else
             {
+                // Delete primaryPathName temporarily because if it is "_id" MongoDB doesn't allow it to be updated.
+                delete values[schema.primaryPathName];
+
                 yield dbOperator.updateOne({
                     schema,
                     query: createIdQuery(schema.primaryPathName, id),
                     values
                 });
+
+                values[schema.primaryPathName] = id;
             }
 
             return {errors, values};
