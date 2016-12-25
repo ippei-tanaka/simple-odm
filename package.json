@@ -34,8 +34,6 @@
     "chai": "^3.5.0",
     "co": "^4.6.0",
     "esdoc": "^0.4.8",
-    "jaguarjs-jsdoc": "^1.0.0",
-    "jsdoc": "^3.4.0",
     "mocha": "^2.5.3",
     "rimraf": "^2.5.2",
     "validator": "^5.4.0"
@@ -44,7 +42,6 @@
     "babel-plugin-transform-runtime": "^6.9.0",
     "babel-runtime": "^6.9.2",
     "deepcopy": "^0.6.3",
-    "immutable": "^3.8.1",
     "mongodb": "^2.1.18",
     "pluralize": "^3.0.0",
     "uuid-validate": "0.0.2"
