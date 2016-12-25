@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ippei-tanaka/simple-odm.svg?branch=master)](https://travis-ci.org/ippei-tanaka/simple-odm)
+
 # Simple ODM
 
 Simple ODM is an object-document mapper for NoSQL databases. It only supports MongoDB now.
