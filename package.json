@@ -5,14 +5,15 @@
   "main": "lib/index.js",
   "scripts": {
     "compile": "npm run compile:clean && npm run compile:src",
-    "compile:clean": "./node_modules/.bin/rimraf lib",
-    "compile:src": " ./node_modules/.bin/babel src --out-dir lib",
+    "compile:clean": "rimraf lib",
+    "compile:src": " babel src --out-dir lib",
+    "watch-build-docs": "watch \"npm run build-docs\" src",
     "build-docs": "npm run build-docs:clean && npm run build-docs:docs",
-    "build-docs:clean": "./node_modules/.bin/rimraf docs",
-    "build-docs:docs": " ./node_modules/.bin/esdoc -c esdoc.json",
-    "test": "./node_modules/.bin/mocha $(find test -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
-    "test:unit": "./node_modules/.bin/mocha $(find test/unit -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
-    "test:integration": "./node_modules/.bin/mocha $(find test/integration -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
+    "build-docs:clean": "rimraf docs",
+    "build-docs:docs": "esdoc -c esdoc.json",
+    "test": "mocha $(find test -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
+    "test:unit": "mocha $(find test/unit -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
+    "test:integration": "mocha $(find test/integration -name '*.test.js') --compilers js:babel-register --require babel-polyfill",
     "prepublish": "npm run compile"
   },
   "author": {
@@ -36,7 +37,8 @@
     "esdoc": "^0.4.8",
     "mocha": "^2.5.3",
     "rimraf": "^2.5.2",
-    "validator": "^5.4.0"
+    "validator": "^5.4.0",
+    "watch": "^1.0.1"
   },
   "dependencies": {
     "babel-plugin-transform-runtime": "^6.9.0",
