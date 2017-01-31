@@ -1,10 +1,18 @@
 export default class Type {
 
-    constructor(name) {
-        Object.defineProperty(this, "_name", {value: name});
+    /**
+     * @param {string} name - the name of the type
+     */
+    constructor (name)
+    {
+        Object.defineProperty(this, "_name", {value: String(name)});
     }
 
-    toString() {
+    /**
+     * @return {string}
+     */
+    toString ()
+    {
         return this._name;
     }
 }
