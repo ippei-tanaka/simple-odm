@@ -1,6 +1,6 @@
 {
   "name": "simple-odm",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "a simple object document mapper",
   "main": "lib/index.js",
   "scripts": {
