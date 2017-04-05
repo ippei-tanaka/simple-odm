@@ -49,6 +49,6 @@
     "uuid-validate": "0.0.2"
   },
   "engines": {
-    "node": "6.x.x"
+    "node": ">=6.x.x"
   }
 }
