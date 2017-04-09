@@ -155,7 +155,7 @@ class MongoModel extends Model {
 
             if (error instanceof MongoError && error.code === 11000)
             {
-                const match = error.message.match(/\$([\w]+)_\d+\s.+\{.+:\s"(.+)"\s\}/);
+                const match = error.message.match(/([\w]+)_\d+\s.+\{.+:\s"(.+)"\s\}/);
                 const pathName = match[1];
                 const value = match[2];
                 newError = {[pathName]: [schema.paths[pathName].uniqueErrorMessageBuilder(value)]};
