@@ -5,7 +5,6 @@ import mongoDbBaseOperator from '../../src/mongo/mongo-db-base-operator';
 import mongoDbModelOperator from '../../src/mongo/mongo-db-model-operator';
 import MongoSchema from '../../src/mongo/mongo-schema';
 import MongoModel from '../../src/mongo/mongo-model';
-import types from '../../src/types';
 import { ObjectID } from 'mongodb';
 
 const DB_NAME = "simple-odm";

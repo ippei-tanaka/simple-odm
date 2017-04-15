@@ -360,7 +360,7 @@ describe('model', function ()
                 error = e || null;
             }
 
-            expect(error.message).to.equal('Cannot set property values of #<Model> which has only a getter');
+            expect(error.message).to.match(/^Cannot set property values of (#<Model>|\[object Object]) which has only a getter$/);
 
             done();
         }).catch((e) =>
@@ -415,7 +415,7 @@ describe('model', function ()
                 error = e;
             }
 
-            expect(error.message).to.equal('Cannot set property _my_id_prop of #<Object> which has only a getter');
+            expect(error.message).to.match(/^Cannot set property _my_id_prop of (#<Object>|\[object Object]) which has only a getter$/);
 
             done();
         }).catch((e) =>
