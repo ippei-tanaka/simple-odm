@@ -1,4 +1,3 @@
-import co from 'co';
 import typeFunctions from './type-functions';
 import { SimpleOdmError } from './errors';
 
@@ -14,64 +13,62 @@ const checkIfEmpty = (value) => value === "" || value === undefined;
  * @param updated {boolean}
  * @returns {Promise.<Array>}
  */
-const inspectErrors = ({path, value, updated}) =>
-    co(function* ()
+const inspectErrors = async ({path, value, updated}) =>
+{
+    let errorMessages = [];
+    const isEmpty = checkIfEmpty(value);
+
+    if (isEmpty && !updated && path.isRequiredWhenCreated)
     {
-        let errorMessages = [];
-        const isEmpty = checkIfEmpty(value);
-
-        if (isEmpty && !updated && path.isRequiredWhenCreated)
-        {
-            errorMessages.push(path.requiredWhenCreatedErrorMessageBuilder());
-            return errorMessages;
-        }
-
-        if (isEmpty && updated && path.isRequiredWhenUpdated)
-        {
-            errorMessages.push(path.requiredWhenUpdatedErrorMessageBuilder());
-            return errorMessages;
-        }
-
-        if (isEmpty)
-        {
-            return errorMessages;
-        }
-
-        try
-        {
-            typeFunctions.convertTo(value, path.type);
-        } catch (error)
-        {
-            errorMessages.push(path.typeErrorMessageBuilder(value));
-            return errorMessages;
-        }
-
-        const result = path.validator(path.sanitizer(value));
-
-        if (typeof result === "string")
-        {
-            errorMessages.push(result);
-        }
-        else
-        {
-            for (let message of result)
-            {
-                errorMessages.push(String(message));
-            }
-        }
-
+        errorMessages.push(path.requiredWhenCreatedErrorMessageBuilder());
         return errorMessages;
-    });
+    }
+
+    if (isEmpty && updated && path.isRequiredWhenUpdated)
+    {
+        errorMessages.push(path.requiredWhenUpdatedErrorMessageBuilder());
+        return errorMessages;
+    }
+
+    if (isEmpty)
+    {
+        return errorMessages;
+    }
+
+    try
+    {
+        typeFunctions.convertTo(value, path.type);
+    } catch (error)
+    {
+        errorMessages.push(path.typeErrorMessageBuilder(value));
+        return errorMessages;
+    }
+
+    const result = path.validator(path.sanitizer(value));
+
+    if (typeof result === "string")
+    {
+        errorMessages.push(result);
+    }
+    else
+    {
+        for (let message of result)
+        {
+            errorMessages.push(String(message));
+        }
+    }
+
+    return errorMessages;
+};
 
 /**
  * @param path {Path}
  * @param value {*}
  * @returns {Promise.<*>}
  */
-const getFormattedValue = ({path, value}) =>
-    co(function* ()
-    {
-        return path.sanitizer(typeFunctions.convertTo(value, path.type));
-    });
+const getFormattedValue = async ({path, value}) =>
+{
+    return path.sanitizer(typeFunctions.convertTo(value, path.type));
+};
 
 export default {inspectErrors, getFormattedValue};

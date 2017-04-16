@@ -1,4 +1,3 @@
-import co from 'co';
 import { expect } from 'chai';
 import Schema from '../../src/schema';
 import Types from '../../src/types';
@@ -6,79 +5,63 @@ import { SimpleOdmError } from '../../src/errors';
 
 describe('schema', function ()
 {
-    it('should throw an error if some arguments are invalid.', (done) =>
+    it('should throw an error if some arguments are invalid.', () =>
     {
-        co(function* ()
-        {
-            let error;
+        let error;
 
-            try {
-                new Schema({
-                    name: 0
-                });
-            } catch (e) {
-                error = e || null;
-            }
+        try {
+            new Schema({
+                name: 0
+            });
+        } catch (e) {
+            error = e || null;
+        }
 
-            expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('A schema name has to be string.');
+        expect(error).to.be.an.instanceof(SimpleOdmError);
+        expect(error.message).to.equal('A schema name has to be string.');
 
-            error = null;
+        error = null;
 
-            try {
-                new Schema({
-                    name: 'user',
-                    paths: () => {}
-                });
-            } catch (e) {
-                error = e || null;
-            }
+        try {
+            new Schema({
+                name: 'user',
+                paths: () => {}
+            });
+        } catch (e) {
+            error = e || null;
+        }
 
-            expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('A paths argument has to be an object.');
+        expect(error).to.be.an.instanceof(SimpleOdmError);
+        expect(error.message).to.equal('A paths argument has to be an object.');
 
-            error = null;
+        error = null;
 
-            try {
-                new Schema({
-                    name: 'user',
-                    paths: []
-                });
-            } catch (e) {
-                error = e || null;
-            }
+        try {
+            new Schema({
+                name: 'user',
+                paths: []
+            });
+        } catch (e) {
+            error = e || null;
+        }
 
-            expect(error).to.be.an.instanceof(SimpleOdmError);
-            expect(error.message).to.equal('A paths argument has to be an object.');
-
-            done();
-        }).catch((e) =>
-        {
-            done(e);
-        });
+        expect(error).to.be.an.instanceof(SimpleOdmError);
+        expect(error.message).to.equal('A paths argument has to be an object.');
     });
 
-    it('should create a schema.', (done) =>
+    it('should create a schema.', () =>
     {
-        co(function* ()
-        {
-            const schema = new Schema({
-                name: 'user',
-                paths: {
-                    email: {
-                        type: Types.String,
-                        required: true
-                    }
+        const schema = new Schema({
+            name: 'user',
+            paths: {
+                email: {
+                    type: Types.String,
+                    required: true
                 }
-            });
-
-            expect(schema.paths.email.type).to.equal(Types.String);
-
-            done();
-        }).catch((e) =>
-        {
-            done(e);
+            }
         });
+
+        expect(schema.paths.email.type).to.equal(Types.String);
     });
 
 });

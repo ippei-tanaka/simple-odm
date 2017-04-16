@@ -1,5 +1,4 @@
 import { MongoClient } from 'mongodb';
-import co from 'co';
 import { SimpleOdmError } from './../errors';
 
 let db = null;
@@ -17,8 +16,7 @@ const onDisconnected = () =>
     db = null;
 };
 
-const connect = () =>
-    co(function* ()
+const connect = async () =>
     {
         if (!setting.database)
         {
@@ -28,21 +26,20 @@ const connect = () =>
         if (!db)
         {
             const url = buildUrl(setting);
-            db = yield MongoClient.connect(url);
+            db = await MongoClient.connect(url);
             db.on("close", onDisconnected);
         }
 
         return db;
-    });
+    };
 
-const disconnect = () =>
-    co(function* ()
+const disconnect = async () =>
     {
         if (db)
         {
-            yield db.close();
+            await db.close();
         }
-    });
+    };
 
 const setUp = (args) =>
 {

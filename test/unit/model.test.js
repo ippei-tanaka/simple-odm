@@ -1,4 +1,3 @@
-import co from 'co';
 import { expect } from 'chai';
 import validator from 'validator';
 import types from '../../src/types';
@@ -9,419 +8,358 @@ import EventHub from '../../src/event-hub';
 describe('model', function ()
 {
 
-    it('should have the default value.', (done) =>
+    it('should have the default value.', async () =>
     {
-        co(function* ()
-        {
-            const schema = new Schema({
-                name: 'user',
-                paths: {
-                    age: {
-                        type: types.Integer,
-                        default_value: 20
-                    }
+        const schema = new Schema({
+            name: 'user',
+            paths: {
+                age: {
+                    type: types.Integer,
+                    default_value: 20
                 }
-            });
+            }
+        });
 
-            class User extends Model {
+        class User extends Model {
 
-                static get schema ()
-                {
-                    return schema;
-                }
-
+            static get schema ()
+            {
+                return schema;
             }
 
-            const model = new User({});
+        }
 
-            expect(model.values.age).to.equal(20);
+        const model = new User({});
 
-            done();
-
-        }).catch((e) =>
-        {
-            done(e);
-        });
+        expect(model.values.age).to.equal(20);
     });
 
-    it('should accept various validate attributes.', (done) =>
+    it('should accept various validate attributes.', async () =>
     {
-        co(function* ()
-        {
-            const schema = new Schema({
-                name: 'user',
-                paths: {
-                    email: {
-                        required: true,
-                        validate: function (v)
+        const schema = new Schema({
+            name: 'user',
+            paths: {
+                email: {
+                    required: true,
+                    validate: function (v)
+                    {
+                        if (!validator.isEmail(v))
                         {
-                            if (!validator.isEmail(v))
-                            {
-                                return `"${v}" is not a valid email.`;
-                            }
+                            return `"${v}" is not a valid email.`;
                         }
-                    },
+                    }
+                },
 
-                    age: {
-                        required: true,
-                        validate: function (v)
+                age: {
+                    required: true,
+                    validate: function (v)
+                    {
+                        if (!validator.isNumeric(v))
                         {
-                            if (!validator.isNumeric(v))
-                            {
-                                return [`"${v}" is not a number.`];
-                            }
+                            return [`"${v}" is not a number.`];
                         }
-                    },
+                    }
+                },
 
-                    gender: {
-                        required: true,
-                        validate: function* (v)
+                gender: {
+                    required: true,
+                    validate: function* (v)
+                    {
+                        yield `Gender is not binary, though.`;
+
+                        if (typeof v !== "boolean")
                         {
-                            yield `Gender is not binary, though.`;
-
-                            if (typeof v !== "boolean")
-                            {
-                                yield `"${v}" is not a boolean.`;
-                            }
+                            yield `"${v}" is not a boolean.`;
                         }
                     }
                 }
-            });
-
-            class User extends Model {
-
-                static get schema ()
-                {
-                    return schema;
-                }
-
             }
-
-            const model = new User({
-                email: "test",
-                age: "a",
-                gender: 2
-            });
-
-            let error;
-
-            try
-            {
-                yield model.save();
-            }
-            catch (e)
-            {
-                error = e;
-            }
-
-            expect(error.message.email[0]).to.equal('"test" is not a valid email.');
-            expect(error.message.age[0]).to.equal('"a" is not a number.');
-            expect(error.message.gender[0]).to.equal('Gender is not binary, though.');
-            expect(error.message.gender[1]).to.equal('"2" is not a boolean.');
-
-            done();
-
-        }).catch((e) =>
-        {
-            done(e);
         });
+
+        class User extends Model {
+
+            static get schema ()
+            {
+                return schema;
+            }
+
+        }
+
+        const model = new User({
+            email: "test",
+            age: "a",
+            gender: 2
+        });
+
+        let error;
+
+        try
+        {
+            await model.save();
+        }
+        catch (e)
+        {
+            error = e;
+        }
+
+        expect(error.message.email[0]).to.equal('"test" is not a valid email.');
+        expect(error.message.age[0]).to.equal('"a" is not a number.');
+        expect(error.message.gender[0]).to.equal('Gender is not binary, though.');
+        expect(error.message.gender[1]).to.equal('"2" is not a boolean.');
     });
 
-    it('should throw an error if values have invalid data.', (done) =>
+    it('should throw an error if values have invalid data.', async () =>
     {
-        co(function* ()
-        {
-            const schema = new Schema({
-                name: 'user',
-                paths: {
-                    email: {
-                        type: types.String,
-                        required: true,
-                        validate: function* (v)
+        const schema = new Schema({
+            name: 'user',
+            paths: {
+                email: {
+                    type: types.String,
+                    required: true,
+                    validate: function* (v)
+                    {
+                        if (!validator.isEmail(v))
                         {
-                            if (!validator.isEmail(v))
-                            {
-                                yield `"${v}" is not a valid email.`;
-                            }
+                            yield `"${v}" is not a valid email.`;
                         }
                     }
                 }
-            });
-
-            class User extends Model {
-
-                static get schema ()
-                {
-                    return schema;
-                }
-
             }
-
-            const model = new User({
-                email: "test"
-            });
-
-            let error;
-
-            try
-            {
-                yield model.save();
-            }
-            catch (e)
-            {
-                error = e;
-            }
-
-            expect(error.message.email[0]).to.equal('"test" is not a valid email.');
-
-            done();
-
-        }).catch((e) =>
-        {
-            done(e);
         });
+
+        class User extends Model {
+
+            static get schema ()
+            {
+                return schema;
+            }
+
+        }
+
+        const model = new User({
+            email: "test"
+        });
+
+        let error;
+
+        try
+        {
+            await model.save();
+        }
+        catch (e)
+        {
+            error = e;
+        }
+
+        expect(error.message.email[0]).to.equal('"test" is not a valid email.');
     });
 
-    it('should let BEFORE_SAVE hook modify the model values.', (done) =>
+    it('should let BEFORE_SAVE hook modify the model values.', async () =>
     {
-        co(function* ()
-        {
-            const schema = new Schema({
-                name: 'user',
-                paths: {
-                    email: {
-                        type: types.String,
-                        required: true
-                    }
+        const schema = new Schema({
+            name: 'user',
+            paths: {
+                email: {
+                    type: types.String,
+                    required: true
                 }
-            });
-
-            EventHub.on(schema.BEFORE_SAVED, ({values}) =>
-            {
-                values.age = 20;
-                values.email += "?";
-                return {values};
-            });
-
-            class User extends Model {
-
-                static get schema ()
-                {
-                    return schema;
-                }
-
             }
-
-            const model = new User({
-                email: "test"
-            });
-
-            let error;
-
-            try
-            {
-                yield model.save();
-            }
-            catch (e)
-            {
-                error = e;
-            }
-
-            expect(error).to.be.an('undefined');
-            expect(model.values.email).to.equal("test?");
-            expect(model.values.age).to.equal(20);
-
-            done();
-
-        }).catch((e) =>
-        {
-            done(e);
         });
+
+        EventHub.on(schema.BEFORE_SAVED, ({values}) =>
+        {
+            values.age = 20;
+            values.email += "?";
+            return {values};
+        });
+
+        class User extends Model {
+
+            static get schema ()
+            {
+                return schema;
+            }
+
+        }
+
+        const model = new User({
+            email: "test"
+        });
+
+        let error;
+
+        try
+        {
+            await model.save();
+        }
+        catch (e)
+        {
+            error = e;
+        }
+
+        expect(error).to.be.an('undefined');
+        expect(model.values.email).to.equal("test?");
+        expect(model.values.age).to.equal(20);
     });
 
-    it('should let BEFORE_SAVE hook modify the values and error messages.', (done) =>
+    it('should let BEFORE_SAVE hook modify the values and error messages.', async () =>
     {
-        co(function* ()
-        {
-            const schema = new Schema({
-                name: 'user',
-                paths: {
-                    email: {
-                        required: true,
-                        validate: function* (v)
+        const schema = new Schema({
+            name: 'user',
+            paths: {
+                email: {
+                    required: true,
+                    validate: function* (v)
+                    {
+                        if (!validator.isEmail(v))
                         {
-                            if (!validator.isEmail(v))
-                            {
-                                yield `"${v}" is not a valid email.`;
-                            }
+                            yield `"${v}" is not a valid email.`;
                         }
                     }
                 }
-            });
+            }
+        });
 
-            EventHub.on(schema.BEFORE_SAVED, ({errors}) =>
+        EventHub.on(schema.BEFORE_SAVED, ({errors}) =>
+        {
+            errors.fake_password = ["Boo!"];
+            return {errors};
+        });
+
+        EventHub.on(schema.BEFORE_SAVED, ({errors}) => new Promise((resolve) =>
+        {
+            setTimeout(() =>
             {
-                errors.fake_password = ["Boo!"];
-                return {errors};
-            });
+                errors.fake_email = ["Oh, no!", "You added something new!"];
+                resolve({errors});
+            }, 100);
+        }));
 
-            EventHub.on(schema.BEFORE_SAVED, ({errors}) => new Promise((resolve) =>
+        EventHub.on(schema.BEFORE_SAVED, async ({errors}) =>
+        {
+            await new Promise((resolve) =>
             {
                 setTimeout(() =>
                 {
-                    errors.fake_email = ["Oh, no!", "You added something new!"];
+                    errors.fake_age = ["Ho ho!"];
                     resolve({errors});
                 }, 100);
-            }));
-
-            EventHub.on(schema.BEFORE_SAVED, ({errors}) => co(function* ()
-            {
-                yield new Promise((resolve) =>
-                {
-                    setTimeout(() =>
-                    {
-                        errors.fake_age = ["Ho ho!"];
-                        resolve({errors});
-                    }, 100);
-                });
-            }));
-
-
-            class User extends Model {
-
-                static get schema ()
-                {
-                    return schema;
-                }
-
-            }
-
-            const model = new User({
-                email: "test"
             });
-
-            let error;
-
-            try
-            {
-                yield model.save();
-            }
-            catch (e)
-            {
-                error = e;
-            }
-
-            expect(error.message.email[0]).to.equal('"test" is not a valid email.');
-            expect(error.message.fake_email[0]).to.equal("Oh, no!");
-            expect(error.message.fake_email[1]).to.equal("You added something new!");
-            expect(error.message.fake_password[0]).to.equal("Boo!");
-            expect(error.message.fake_age[0]).to.equal("Ho ho!");
-
-            done();
-        }).catch((e) =>
-        {
-            done(e);
         });
+
+        class User extends Model {
+
+            static get schema ()
+            {
+                return schema;
+            }
+
+        }
+
+        const model = new User({
+            email: "test"
+        });
+
+        let error;
+
+        try
+        {
+            await model.save();
+        }
+        catch (e)
+        {
+            error = e;
+        }
+
+        expect(error.message.email[0]).to.equal('"test" is not a valid email.');
+        expect(error.message.fake_email[0]).to.equal("Oh, no!");
+        expect(error.message.fake_email[1]).to.equal("You added something new!");
+        expect(error.message.fake_password[0]).to.equal("Boo!");
+        expect(error.message.fake_age[0]).to.equal("Ho ho!");
     });
 
-    it('should not let the values be replaced.', (done) =>
+    it('should not let the values be replaced.', async () =>
     {
-        co(function* ()
-        {
-            const schema = new Schema({
-                name: 'user',
-                paths: {
-                    email: {}
-                }
-            });
-
-            class User extends Model {
-
-                static get schema ()
-                {
-                    return schema;
-                }
-
+        const schema = new Schema({
+            name: 'user',
+            paths: {
+                email: {}
             }
-
-            const model = new User({
-                email: "test"
-            });
-
-            let error;
-
-            try
-            {
-                //noinspection JSUnresolvedVariable
-                model.values = {};
-            }
-            catch (e)
-            {
-                error = e || null;
-            }
-
-            expect(error.message).to.match(/^Cannot set property values of (#<Model>|\[object Object]) which has only a getter$/);
-
-            done();
-        }).catch((e) =>
-        {
-            done(e);
         });
+
+        class User extends Model {
+
+            static get schema ()
+            {
+                return schema;
+            }
+
+        }
+
+        const model = new User({
+            email: "test"
+        });
+
+        let error;
+
+        try
+        {
+            //noinspection JSUnresolvedVariable
+            model.values = {};
+        }
+        catch (e)
+        {
+            error = e || null;
+        }
+
+        expect(error.message).to.match(/^Cannot set property values of (#<Model>|\[object Object]) which has only a getter$/);
     });
 
-    it('should not let the id be modified.', (done) =>
+    it('should not let the id be modified.', async () =>
     {
-        co(function* ()
-        {
-            class _Schema extends Schema {
+        class _Schema extends Schema {
 
-                get primaryPathName ()
-                {
-                    return "_my_id_prop";
-                }
-            }
-
-            const schema = new _Schema({
-                name: 'user',
-                paths: {
-                    email: {}
-                }
-            });
-
-            class User extends Model {
-
-                static get schema ()
-                {
-                    return schema;
-                }
-
-            }
-
-            const model = new User({
-                email: "test"
-            });
-
-            expect(model.values._my_id_prop).to.be.an('undefined');
-
-            let error;
-
-            try
+            get primaryPathName ()
             {
-                model.values._my_id_prop = 123;
+                return "_my_id_prop";
             }
+        }
 
-            catch (e)
-            {
-                error = e;
+        const schema = new _Schema({
+            name: 'user',
+            paths: {
+                email: {}
             }
-
-            expect(error.message).to.match(/^Cannot set property _my_id_prop of (#<Object>|\[object Object]) which has only a getter$/);
-
-            done();
-        }).catch((e) =>
-        {
-            done(e);
         });
+
+        class User extends Model {
+
+            static get schema ()
+            {
+                return schema;
+            }
+
+        }
+
+        const model = new User({
+            email: "test"
+        });
+
+        expect(model.values._my_id_prop).to.be.an('undefined');
+
+        let error;
+
+        try
+        {
+            model.values._my_id_prop = 123;
+        }
+
+        catch (e)
+        {
+            error = e;
+        }
+
+        expect(error.message).to.match(/^Cannot set property _my_id_prop of (#<Object>|\[object Object]) which has only a getter$/);
     });
 
 });

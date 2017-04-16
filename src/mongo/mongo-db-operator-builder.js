@@ -1,4 +1,3 @@
-import co from 'co';
 import pluralize from 'pluralize';
 
 export default (mongoDriver, originalOperations) =>
@@ -7,9 +6,9 @@ export default (mongoDriver, originalOperations) =>
 
     for (const property of Object.keys(originalOperations))
     {
-        operations[property] = (arg = {}) => co(function* ()
+        operations[property] = async (arg = {}) =>
         {
-            const db = yield mongoDriver.connect();
+            const db = await mongoDriver.connect();
             arg.db = db;
 
             if (arg.schema) {
@@ -19,8 +18,8 @@ export default (mongoDriver, originalOperations) =>
                 delete arg.schema;
             }
 
-            return yield originalOperations[property](arg);
-        });
+            return await originalOperations[property](arg);
+        };
     }
 
     return Object.freeze(operations);

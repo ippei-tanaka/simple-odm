@@ -1,5 +1,3 @@
-import co from 'co';
-
 const createUniqueIndex = ({collection, pathName}) =>
     collection.createIndex({[pathName]: 1}, {unique: true});
 

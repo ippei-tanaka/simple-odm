@@ -1,18 +1,17 @@
-import co from 'co';
 import pathFunctions from './path-functions';
 
-const inspectErrors = ({schema, updated, values}) => co(function* ()
+const inspectErrors = async ({schema, updated, values}) =>
 {
     let errorMessages = {};
 
     for (let path of schema)
     {
         const value = values[path.name];
-        errorMessages[path.name] = yield pathFunctions.inspectErrors({path, value, updated});
+        errorMessages[path.name] = await pathFunctions.inspectErrors({path, value, updated});
     }
 
     return errorMessages;
-});
+};
 
 const createValueObjectWithDefaultValues = ({values, schema}) =>
 {
@@ -50,7 +49,7 @@ const createValueObjectWithId = ({values, idPathName, idGetter}) =>
  */
 const isObject = a => typeof a === 'object' && a !== null;
 
-const generateFormattedValues = ({schema, values}) => co(function* ()
+const generateFormattedValues = async ({schema, values}) =>
 {
     let obj = Object.assign({}, values);
 
@@ -60,7 +59,7 @@ const generateFormattedValues = ({schema, values}) => co(function* ()
 
         try
         {
-            obj[path.name] = yield pathFunctions.getFormattedValue({path, value});
+            obj[path.name] = await pathFunctions.getFormattedValue({path, value});
         }
         catch (e)
         {
@@ -69,7 +68,7 @@ const generateFormattedValues = ({schema, values}) => co(function* ()
     }
 
     return obj;
-});
+};
 
 const compactErrors = (errors) =>
 {

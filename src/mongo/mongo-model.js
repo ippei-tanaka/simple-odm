@@ -1,6 +1,5 @@
-import co from 'co';
 import Model from './../model';
-import { MongoError } from 'mongodb';
+import {MongoError} from 'mongodb';
 import mongoDbModelOperator from './mongo-db-model-operator';
 
 const createIdQuery = (key, id) => id ? {[key]: id} : null;
@@ -23,47 +22,35 @@ class MongoModel extends Model {
      * @param limit {number}
      * @param skip {number}
      */
-    static findMany ({query = {}, sort = {}, limit = 0, skip = 0} = {})
+    static async findMany ({query = {}, sort = {}, limit = 0, skip = 0} = {})
     {
-        return co(function* ()
-        {
-            const docs = yield this.dbOperator.findMany({schema: this.schema, query, sort, limit, skip});
-            return docs.map(doc => new this(doc));
-        }.bind(this));
+        const docs = await this.dbOperator.findMany({schema: this.schema, query, sort, limit, skip});
+        return docs.map(doc => new this(doc));
     }
 
     /**
      * @param query {object}
      */
-    static findOne (query = {})
+    static async findOne (query = {})
     {
-        return co(function* ()
-        {
-            const doc = yield this.dbOperator.findOne({schema: this.schema, query});
-            return doc ? new this(doc) : null;
-        }.bind(this));
+        const doc = await this.dbOperator.findOne({schema: this.schema, query});
+        return doc ? new this(doc) : null;
     }
 
     /**
      * @param query {object}
      */
-    static deleteOne (query = {})
+    static async deleteOne (query = {})
     {
-        return co(function* ()
-        {
-            yield this.dbOperator.deleteOne({schema: this.schema, query});
-        }.bind(this));
+        await this.dbOperator.deleteOne({schema: this.schema, query});
     }
 
     /**
      * @param query {object}
      */
-    static aggregate (query)
+    static async aggregate (query)
     {
-        return co(function* ()
-        {
-            return yield this.dbOperator.aggregate({schema: this.schema, query});
-        }.bind(this));
+        return await this.dbOperator.aggregate({schema: this.schema, query});
     }
 
     /**
@@ -77,53 +64,49 @@ class MongoModel extends Model {
     /**
      * @override
      */
-    _save ({errors, values})
+    async _save ({errors, values})
     {
         const dbOperator = this._dbOperator;
         const schema = this._schema;
         const id = this.id;
 
-        return co(function* ()
         {
+            let info = null;
 
-            // Create unique indexes if they don't exist.
-
+            try
             {
-                let info = null;
+                info = await dbOperator.getIndexInfo({schema});
+            }
+            catch (e)
+            {}
 
-                try
+            for (let path of schema)
+            {
+                if (!path.isUnique)
                 {
-                    info = yield dbOperator.getIndexInfo({schema});
+                    continue;
                 }
-                catch (e)
-                {}
 
-                for (let path of schema)
+                const hasUniqueIndex = info === null
+                    ? false
+                    : info.filter(v => v.key[path.name] === 1 && v.unique === true).length > 0;
+
+                if (!hasUniqueIndex)
                 {
-                    if (!path.isUnique)
-                    {
-                        continue;
-                    }
-
-                    const hasUniqueIndex = info === null
-                        ? false
-                        : info.filter(v => v.key[path.name] === 1 && v.unique === true).length > 0;
-
-                    if (!hasUniqueIndex)
-                    {
-                        yield dbOperator.createUniqueIndex({schema, pathName: path.name});
-                    }
+                    await dbOperator.createUniqueIndex({schema, pathName: path.name});
                 }
             }
+        }
 
 
-            // Insert or update the model based on whether it has an ID.
+        try
+        {
 
             const newValues = Object.assign({}, values);
 
             if (!id)
             {
-                const { insertedId } = yield dbOperator.insertOne({
+                const {insertedId} = await dbOperator.insertOne({
                     schema,
                     values
                 });
@@ -138,7 +121,7 @@ class MongoModel extends Model {
                 // Delete primaryPathName temporarily because if it is "_id" MongoDB doesn't allow it to be updated.
                 delete values[schema.primaryPathName];
 
-                yield dbOperator.updateOne({
+                await dbOperator.updateOne({
                     schema,
                     query: createIdQuery(schema.primaryPathName, id),
                     values
@@ -146,16 +129,16 @@ class MongoModel extends Model {
 
                 values[schema.primaryPathName] = id;
             }
-
             return {errors, values};
 
-        }).catch(function (error)
+        }
+        catch (e)
         {
             let newError = {};
 
-            if (error instanceof MongoError && error.code === 11000)
+            if (e instanceof MongoError && e.code === 11000)
             {
-                const match = error.message.match(/([\w]+)_\d+\s.+\{.+:\s"(.+)"\s\}/);
+                const match = e.message.match(/([\w]+)_\d+\s.+\{.+:\s"(.+)"\s\}/);
                 const pathName = match[1];
                 const value = match[2];
                 newError = {[pathName]: [schema.paths[pathName].uniqueErrorMessageBuilder(value)]};
@@ -165,8 +148,7 @@ class MongoModel extends Model {
                 errors: Object.assign({}, errors, newError),
                 values
             };
-
-        }.bind(this));
+        }
     }
 
 }
