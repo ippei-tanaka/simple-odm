@@ -146,7 +146,7 @@ describe('mongo-model', function ()
         expect(users3.length).to.equal(0);
     });
 
-    it('should create a unique index when the model with the schema that has the unique flagged path is saved.', async () =>
+    it('should not create a new document with a duplicated value that is supposed to be unique.', async () =>
     {
         const schema = new MongoSchema({
             name: 'user',
@@ -187,7 +187,57 @@ describe('mongo-model', function ()
         try
         {
             await model2.save();
-        } catch (e)
+        }
+        catch (e)
+        {
+            error = e || null;
+        }
+
+        expect(error.message.email[0]).to.equal('The email, "test", has already been taken.');
+    });
+
+    it('should not update a new document with a duplicated value that is supposed to be unique.', async () =>
+    {
+        const schema = new MongoSchema({
+            name: 'user',
+            paths: {
+                email: {
+                    required: true,
+                    unique: true
+                }
+            }
+        });
+
+        class User extends MongoModel {
+
+            static get schema ()
+            {
+                return schema;
+            };
+        }
+
+        const model = new User({
+            email: "test"
+        });
+
+        await model.save();
+
+        const model2 = new User({
+            email: "test1"
+        });
+
+        await model2.save();
+
+        const user = await User.findOne({_id: model2.id});
+
+        let error;
+
+        try
+        {
+            user.values.email = "test";
+            await user.save();
+        }
+        catch (e)
         {
             error = e || null;
         }
