@@ -1,12 +1,9 @@
 {
     "presets": ["es2015"],
     "plugins": [
-        ["babel-plugin-transform-builtin-extend", {
-            "globals": ["Error"]
-        }],
-        ["transform-runtime", {
-            "polyfill": false,
-            "regenerator": true
-        }]
+        ["babel-plugin-transform-builtin-extend", {"globals": ["Error"]}],
+        ["transform-runtime", {"polyfill": false, "regenerator": true}],
+        "transform-regenerator",
+        ["transform-object-rest-spread", {"useBuiltIns": true}]
     ]
 }
